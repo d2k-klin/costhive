@@ -63,6 +63,14 @@ RUN /opt/costhive-venv/bin/pip install ".[pdf]"
 # Make the Custodian CLI reachable from the app venv's PATH lookups.
 ENV PATH="/opt/tool-venv/bin:$PATH"
 
+# Point Custodian at the bundled policy pack (avoids __file__-relative resolution
+# failing inside the installed package tree).
+ENV COSTHIVE_POLICY_DIR=/app/policies
+
+# Run as non-root user (Steampipe refuses to run as root).
+RUN chown -R steampipe:steampipe /app /opt/costhive-venv /opt/tool-venv
+USER steampipe
+
 # Reports land here; mount a host volume over it (see docker-compose.yml).
 VOLUME ["/app/reports"]
 

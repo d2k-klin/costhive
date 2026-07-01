@@ -11,7 +11,7 @@ services:
     image: costhive:latest
     volumes:
       # Mount your AWS credentials read-only so --profile works.
-      - ${HOME}/.aws:/root/.aws:ro
+      - ${HOME}/.aws:/home/steampipe/.aws:ro
       # Reports written by the container land here on the host.
       - ./reports:/app/reports
       # Mount the IaC directory you want to price (estimate mode) at /iac.
