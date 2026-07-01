@@ -15,7 +15,28 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from costhive.models import Category, Confidence, SavingsFinding
+from costhive.models import Category, Confidence, Risk, SavingsFinding
+
+#: Fallback risk when a tool doesn't state one, keyed by savings category. Explicit
+#: per-query / per-policy risk always wins over this.
+_CATEGORY_DEFAULT_RISK: dict[Category, Risk] = {
+    Category.UNUSED: Risk.SAFE,
+    Category.UNTAGGED: Risk.SAFE,
+    Category.STORAGE_CLASS: Risk.MODERATE,
+    Category.COMMITMENT: Risk.MODERATE,
+    Category.OFF_HOURS: Risk.MODERATE,
+    Category.NETWORK: Risk.MODERATE,
+    Category.IDLE: Risk.JUDGMENT,
+    Category.RIGHTSIZING: Risk.JUDGMENT,
+    Category.OTHER: Risk.MODERATE,
+}
+
+
+def _risk_for(value: Any, category: Category) -> Risk:
+    """Explicit risk if the tool provided one, else a sensible per-category default."""
+    if value in (None, ""):
+        return _CATEGORY_DEFAULT_RISK.get(category, Risk.MODERATE)
+    return Risk.parse(value)
 
 
 def _get(d: dict, *keys: str, default: Any = "") -> Any:
@@ -60,14 +81,16 @@ def parse_steampipe(data: list[dict] | dict, account_id: str = "") -> list[Savin
     for row in rows or []:
         if not isinstance(row, dict):
             continue
+        category = Category.parse(str(_get(row, "category", default="other")))
         findings.append(
             SavingsFinding(
                 tool="steampipe",
-                category=Category.parse(str(_get(row, "category", default="other"))),
+                category=category,
                 title=str(_get(row, "title", "check", default="")),
                 description=str(_get(row, "description", "reason", default="")),
                 estimated_monthly_savings=_num(_get(row, "estimated_monthly_savings", "monthly_savings", "savings")),
                 confidence=Confidence.parse(_get(row, "confidence", default="medium")),
+                risk=_risk_for(_get(row, "risk", default=None), category),
                 resource=str(_get(row, "resource", "arn", "resource_id", "id", default="")),
                 service=str(_get(row, "service", default="")),
                 region=str(_get(row, "region", default="")),
@@ -104,6 +127,7 @@ def parse_custodian(policy_runs: list[dict], account_id: str = "") -> list[Savin
         category = Category.parse(str(_get(run, "category", default="other")))
         per_resource = _num(_get(run, "monthly_savings_each", "monthly_savings", default=0.0))
         confidence = Confidence.parse(_get(run, "confidence", default="medium"))
+        risk = _risk_for(_get(run, "risk", default=None), category)
         action = str(_get(run, "recommended_action", "action", default=""))
         description = str(_get(run, "description", default=""))
         region = str(_get(run, "region", default=""))
@@ -122,6 +146,7 @@ def parse_custodian(policy_runs: list[dict], account_id: str = "") -> list[Savin
                     description=description or f"Matched by Cloud Custodian policy '{policy}'.",
                     estimated_monthly_savings=per_resource,
                     confidence=confidence,
+                    risk=risk,
                     resource=rid,
                     service=service,
                     region=str(_get(res, "Region", "region", default=region)) if isinstance(res, dict) else region,
@@ -185,6 +210,7 @@ def parse_komiser(
                 ),
                 estimated_monthly_savings=0.0,  # governance finding, not directly deletable
                 confidence=Confidence.HIGH,
+                risk=Risk.SAFE,  # applying tags never affects a workload
                 resource=name,
                 service=service,
                 region=str(_get(row, "region", default="")),
@@ -229,6 +255,7 @@ def parse_infracost(data: dict) -> list[SavingsFinding]:
                     ),
                     estimated_monthly_savings=0.0,  # projected spend, not a saving
                     confidence=Confidence.HIGH,
+                    risk=Risk.MODERATE,
                     resource=name,
                     service=str(res.get("resourceType", "")),
                     recommended_action="Review before deploy — rightsize or drop if not required.",

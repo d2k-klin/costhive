@@ -32,6 +32,10 @@
 {% else %}
 > ### 💰 Total estimated monthly savings: **{{ r.total_monthly_savings | money(r.currency) }}**
 > _({{ r.annual_savings | money(r.currency) }}/year across {{ r.total }} opportunities)_
+>
+> **✅ Safe to reclaim now:** {{ r.safe_savings | money(r.currency) }}/mo · **⚖️ Needs a judgment call:** {{ r.judgment_savings | money(r.currency) }}/mo
+>
+> _Figures are estimates based on public list prices, provided to rank opportunities — validate against your own usage before acting. Safe items are reversible/no-impact; judgment-call items may affect a workload._
 {% endif %}
 
 {% if r.has_tool_errors %}
@@ -58,6 +62,16 @@
 _No savings opportunities identified._
 {% endif %}
 
+### Savings by risk (how safe is it to act?)
+
+{% if r.by_risk %}
+| Risk | Opportunities | Est. monthly savings |
+|------|---------------|----------------------|
+{% for rb in r.by_risk %}
+| {{ rb.label }} | {{ rb.count }} | {{ rb.savings | money(r.currency) }} |
+{% endfor %}
+{% endif %}
+
 ### ⚡ Quick wins (high confidence, do these first)
 
 {% if r.quick_wins %}
@@ -74,10 +88,10 @@ _No high-confidence quick wins surfaced._
 ### Top {{ r.top_opportunities | length }} opportunities by dollar impact
 
 {% if r.top_opportunities %}
-| # | Est. monthly savings | Confidence | Category | Tool | Resource | Opportunity |
-|---|----------------------|------------|----------|------|----------|-------------|
+| # | Est. monthly savings | Confidence | Risk | Category | Tool | Resource | Opportunity |
+|---|----------------------|------------|------|----------|------|----------|-------------|
 {% for f in r.top_opportunities %}
-| {{ loop.index }} | {{ f.estimated_monthly_savings | money(r.currency) }} | {{ f.confidence.label }} | {{ f.category.label }} | {{ f.tool }} | `{{ f.resource }}` | {{ f.title }} |
+| {{ loop.index }} | {{ f.estimated_monthly_savings | money(r.currency) }} | {{ f.confidence.label }} | {{ f.risk.label }} | {{ f.category.label }} | {{ f.tool }} | `{{ f.resource }}` | {{ f.title }} |
 {% endfor %}
 {% else %}
 _No opportunities.{% if r.has_tool_errors %} (Run was incomplete.){% endif %}_
@@ -96,7 +110,7 @@ _No opportunities.{% if r.has_tool_errors %} (Run was incomplete.){% endif %}_
 {% for f in r.findings %}
 ### {{ f.estimated_monthly_savings | money(r.currency) }}/mo — {{ f.title }}
 
-- **Category:** {{ f.category.label }} · **Confidence:** {{ f.confidence.label }}
+- **Category:** {{ f.category.label }} · **Confidence:** {{ f.confidence.label }} · **Risk:** {{ f.risk.label }}
 - **Source tool:** {{ f.tool }}
 {% if r.is_rollup and f.account_id %}
 - **Account:** {{ f.account_id }}

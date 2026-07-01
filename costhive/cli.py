@@ -396,6 +396,10 @@ def _print_summary(report, paths: dict[str, str]):
         f"${report.total_monthly_savings:,.2f}[/bold green] "
         f"[dim](${report.annual_savings:,.2f}/yr, {report.total} opportunities)[/dim]"
     )
+    console.print(
+        f"   [green]✅ safe to reclaim: ${report.safe_savings:,.2f}/mo[/green] · "
+        f"[yellow]⚖️  judgment call: ${report.judgment_savings:,.2f}/mo[/yellow]"
+    )
     if report.by_category:
         table = Table(title="Savings by category")
         table.add_column("Category")

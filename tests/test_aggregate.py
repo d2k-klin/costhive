@@ -1,9 +1,17 @@
-from costhive.aggregate import build_report, build_rollup, category_breakdown, dedup, quick_wins, rank
-from costhive.models import Category, Confidence, SavingsFinding
+from costhive.aggregate import (
+    build_report,
+    build_rollup,
+    category_breakdown,
+    dedup,
+    quick_wins,
+    rank,
+    risk_breakdown,
+)
+from costhive.models import Category, Confidence, Risk, SavingsFinding
 from costhive.tools.base import ToolResult, ToolStatus
 
 
-def _f(tool, savings, conf=Confidence.MEDIUM, cat=Category.UNUSED, resource="vol-x", service="ebs"):
+def _f(tool, savings, conf=Confidence.MEDIUM, cat=Category.UNUSED, resource="vol-x", service="ebs", risk=Risk.SAFE):
     return SavingsFinding(
         tool=tool,
         category=cat,
@@ -11,6 +19,7 @@ def _f(tool, savings, conf=Confidence.MEDIUM, cat=Category.UNUSED, resource="vol
         description="d",
         estimated_monthly_savings=savings,
         confidence=conf,
+        risk=risk,
         service=service,
         resource=resource,
     )
@@ -55,14 +64,31 @@ def test_category_breakdown_sums_and_sorts():
     assert unused.count == 2 and unused.savings == 15.0
 
 
-def test_quick_wins_only_high_confidence_above_threshold():
+def test_quick_wins_excludes_low_conf_judgment_and_tiny():
     findings = [
-        _f("a", 100.0, conf=Confidence.LOW, resource="r1"),
-        _f("b", 20.0, conf=Confidence.HIGH, resource="r2"),
-        _f("c", 0.5, conf=Confidence.HIGH, resource="r3"),
+        _f("a", 100.0, conf=Confidence.LOW, resource="r1"),  # low confidence -> out
+        _f("b", 20.0, conf=Confidence.HIGH, resource="r2"),  # safe + high -> in
+        _f("c", 0.5, conf=Confidence.HIGH, resource="r3"),  # sub-$1 -> out
+        _f("d", 90.0, conf=Confidence.HIGH, resource="r4", risk=Risk.JUDGMENT),  # risky -> out
+        _f("e", 15.0, conf=Confidence.MEDIUM, resource="r5", risk=Risk.MODERATE),  # moderate + medium -> in
     ]
     wins = quick_wins(findings)
-    assert [w.resource for w in wins] == ["r2"]  # low-conf and sub-$1 excluded
+    assert {w.resource for w in wins} == {"r2", "r5"}
+    # Highest safe savings first.
+    assert wins[0].resource == "b" or wins[0].estimated_monthly_savings == 20.0
+
+
+def test_risk_breakdown_splits_savings():
+    findings = [
+        _f("a", 10.0, resource="r1", risk=Risk.SAFE),
+        _f("b", 5.0, resource="r2", risk=Risk.SAFE),
+        _f("c", 40.0, resource="r3", risk=Risk.JUDGMENT),
+    ]
+    rb = {r.risk: r for r in risk_breakdown(findings)}
+    assert rb["safe"].savings == 15.0 and rb["safe"].count == 2
+    assert rb["judgment"].savings == 40.0
+    # Safest-first ordering.
+    assert [r.risk for r in risk_breakdown(findings)][0] == "safe"
 
 
 def test_build_report_totals_and_sections():
@@ -87,8 +113,10 @@ def test_build_report_totals_and_sections():
     assert report.total == 2
     assert report.total_monthly_savings == 50.0
     assert report.annual_savings == 600.0
+    assert report.safe_savings == 50.0 and report.judgment_savings == 0.0
     assert report.top_opportunities[0].estimated_monthly_savings == 40.0
-    assert len(report.quick_wins) == 1
+    # Both findings are SAFE with >= MEDIUM confidence and >= $1 -> both quick wins.
+    assert len(report.quick_wins) == 2
     names = {t.name: t.status for t in report.tools}
     assert names["komiser"] == "skipped"
     assert report.to_dict()["summary"]["total_monthly_savings"] == 50.0

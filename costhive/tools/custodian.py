@@ -94,6 +94,7 @@ def _collect_policy_runs(policy_files: list[str], out_dir: str) -> list[dict]:
                     "category": meta.get("category", "other"),
                     "monthly_savings_each": meta.get("monthly_savings_each", 0.0),
                     "confidence": meta.get("confidence", "medium"),
+                    "risk": meta.get("risk"),
                     "recommended_action": meta.get("recommended_action", ""),
                     "description": policy.get("comment", meta.get("description", "")),
                     "service": policy.get("resource", ""),

@@ -17,6 +17,10 @@
 
 > ### 💰 Total estimated monthly savings: **$530.00**
 > _($6,360.00/year across 7 opportunities)_
+>
+> **✅ Safe to reclaim now:** $45.60/mo · **⚖️ Needs a judgment call:** $478.00/mo
+>
+> _Figures are estimates based on public list prices, provided to rank opportunities — validate against your own usage before acting. Safe items are reversible/no-impact; judgment-call items may affect a workload._
 
 ### Savings by category
 
@@ -28,24 +32,33 @@
 | Storage class | 1 | $6.40 | $76.80 |
 | Untagged (governance) | 1 | $0.00 | $0.00 |
 
+### Savings by risk (how safe is it to act?)
+
+| Risk | Opportunities | Est. monthly savings |
+|------|---------------|----------------------|
+| Safe | 3 | $45.60 |
+| Moderate | 1 | $6.40 |
+| Judgment call | 3 | $478.00 |
+
 ### ⚡ Quick wins (high confidence, do these first)
 
 | Est. monthly savings | Resource | Action |
 |----------------------|----------|--------|
 | **$42.00** | `vol-0a1b2c3d` | Snapshot then delete the volume. |
+| **$6.40** | `vol-9z8y7x` | Modify volume type gp2 -> gp3 (online). |
 | **$3.60** | `eipalloc-1234` | Release the Elastic IP. |
 
 ### Top 7 opportunities by dollar impact
 
-| # | Est. monthly savings | Confidence | Category | Tool | Resource | Opportunity |
-|---|----------------------|------------|----------|------|----------|-------------|
-| 1 | $220.00 | Medium | Idle resources | custodian | `db-prod-legacy` | Idle RDS instance |
-| 2 | $180.00 | Medium | Rightsizing | custodian | `i-0f9e8d7c` | Low-utilization EC2 instance |
-| 3 | $78.00 | Medium | Rightsizing | opencost | `analytics` | Over-provisioned namespace: analytics |
-| 4 | $42.00 | High | Unused / orphaned | steampipe | `vol-0a1b2c3d` | Unattached EBS volume |
-| 5 | $6.40 | Medium | Storage class | steampipe | `vol-9z8y7x` | gp2 volume can move to gp3 |
-| 6 | $3.60 | High | Unused / orphaned | steampipe | `eipalloc-1234` | Unassociated Elastic IP |
-| 7 | $0.00 | High | Untagged (governance) | komiser | `prod-worker` | Untagged resource: prod-worker |
+| # | Est. monthly savings | Confidence | Risk | Category | Tool | Resource | Opportunity |
+|---|----------------------|------------|------|----------|------|----------|-------------|
+| 1 | $220.00 | Medium | Judgment call | Idle resources | custodian | `db-prod-legacy` | Idle RDS instance |
+| 2 | $180.00 | Medium | Judgment call | Rightsizing | custodian | `i-0f9e8d7c` | Low-utilization EC2 instance |
+| 3 | $78.00 | Medium | Judgment call | Rightsizing | opencost | `analytics` | Over-provisioned namespace: analytics |
+| 4 | $42.00 | High | Safe | Unused / orphaned | steampipe | `vol-0a1b2c3d` | Unattached EBS volume |
+| 5 | $6.40 | Medium | Moderate | Storage class | steampipe | `vol-9z8y7x` | gp2 volume can move to gp3 |
+| 6 | $3.60 | High | Safe | Unused / orphaned | steampipe | `eipalloc-1234` | Unassociated Elastic IP |
+| 7 | $0.00 | High | Safe | Untagged (governance) | komiser | `prod-worker` | Untagged resource: prod-worker |
 
 ## Tools
 
@@ -61,34 +74,34 @@
 
 ### $220.00/mo — Idle RDS instance
 
-- **Category:** Idle resources · **Confidence:** Medium
+- **Category:** Idle resources · **Confidence:** Medium · **Risk:** Judgment call
 - **Source tool:** custodian
 - **Service:** rds · **Region:** us-east-1
 - **Resource:** `db-prod-legacy`
 - **Why:** Zero DB connections over 7 days.
-- **Recommended action:** Snapshot and stop or delete.
+- **Recommended action:** Snapshot and stop/delete — confirm truly unused.
 
 ### $180.00/mo — Low-utilization EC2 instance
 
-- **Category:** Rightsizing · **Confidence:** Medium
+- **Category:** Rightsizing · **Confidence:** Medium · **Risk:** Judgment call
 - **Source tool:** custodian
 - **Service:** ec2 · **Region:** us-east-1
 - **Resource:** `i-0f9e8d7c`
 - **Why:** m5.2xlarge under 4% avg CPU over 14 days.
-- **Recommended action:** Downsize to m5.large.
+- **Recommended action:** Downsize to m5.large (verify peak-load headroom).
 
 ### $78.00/mo — Over-provisioned namespace: analytics
 
-- **Category:** Rightsizing · **Confidence:** Medium
+- **Category:** Rightsizing · **Confidence:** Medium · **Risk:** Judgment call
 - **Source tool:** opencost
 - **Service:** eks · **Region:** us-east-1
 - **Resource:** `analytics`
 - **Why:** Runs at 22% efficiency, wasting ~$78/mo.
-- **Recommended action:** Right-size CPU/memory requests.
+- **Recommended action:** Right-size CPU/memory requests (verify headroom).
 
 ### $42.00/mo — Unattached EBS volume
 
-- **Category:** Unused / orphaned · **Confidence:** High
+- **Category:** Unused / orphaned · **Confidence:** High · **Risk:** Safe
 - **Source tool:** steampipe
 - **Service:** ebs · **Region:** us-east-1
 - **Resource:** `vol-0a1b2c3d`
@@ -97,16 +110,16 @@
 
 ### $6.40/mo — gp2 volume can move to gp3
 
-- **Category:** Storage class · **Confidence:** Medium
+- **Category:** Storage class · **Confidence:** Medium · **Risk:** Moderate
 - **Source tool:** steampipe
 - **Service:** ebs · **Region:** us-east-1
 - **Resource:** `vol-9z8y7x`
 - **Why:** gp3 is ~20% cheaper at equal performance.
-- **Recommended action:** Modify volume type gp2 -> gp3.
+- **Recommended action:** Modify volume type gp2 -> gp3 (online).
 
 ### $3.60/mo — Unassociated Elastic IP
 
-- **Category:** Unused / orphaned · **Confidence:** High
+- **Category:** Unused / orphaned · **Confidence:** High · **Risk:** Safe
 - **Source tool:** steampipe
 - **Service:** ec2 · **Region:** eu-central-1
 - **Resource:** `eipalloc-1234`
@@ -115,7 +128,7 @@
 
 ### $0.00/mo — Untagged resource: prod-worker
 
-- **Category:** Untagged (governance) · **Confidence:** High
+- **Category:** Untagged (governance) · **Confidence:** High · **Risk:** Safe
 - **Source tool:** komiser
 - **Service:** ec2 · **Region:** us-east-1
 - **Resource:** `prod-worker`

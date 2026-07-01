@@ -1,4 +1,14 @@
-from costhive.models import Category, Confidence, SavingsFinding
+from costhive.models import Category, Confidence, Risk, SavingsFinding
+
+
+def test_risk_parse_and_order():
+    assert Risk.parse("safe") is Risk.SAFE
+    assert Risk.parse("judgment-call") is Risk.JUDGMENT
+    assert Risk.parse("destructive") is Risk.JUDGMENT
+    assert Risk.parse(None) is Risk.MODERATE
+    assert Risk.parse(0) is Risk.SAFE
+    assert Risk.SAFE < Risk.MODERATE < Risk.JUDGMENT
+    assert Risk.JUDGMENT.label == "Judgment call"
 
 
 def test_confidence_parse_and_order():
@@ -60,4 +70,5 @@ def test_to_dict_has_labels_and_annual():
     assert d["category"] == "idle"
     assert d["category_label"] == "Idle resources"
     assert d["confidence"] == "Low"
+    assert d["risk"] == "Moderate"
     assert d["annual_savings"] == 120.0

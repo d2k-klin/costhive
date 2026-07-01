@@ -33,6 +33,7 @@ FINOPS_QUERIES: dict[str, str] = {
           volume_id as resource,
           round((size * {_EBS_GP3_PER_GB_MONTH})::numeric, 2) as estimated_monthly_savings,
           'high' as confidence,
+          'safe' as risk,
           'Snapshot then delete the volume, or reattach it if still needed.' as recommended_action,
           account_id
         from aws_ebs_volume
@@ -48,6 +49,7 @@ FINOPS_QUERIES: dict[str, str] = {
           allocation_id as resource,
           {_EIP_UNATTACHED_MONTHLY} as estimated_monthly_savings,
           'high' as confidence,
+          'safe' as risk,
           'Release the Elastic IP if it is no longer needed.' as recommended_action,
           account_id
         from aws_vpc_eip
@@ -63,6 +65,7 @@ FINOPS_QUERIES: dict[str, str] = {
           volume_id as resource,
           round((size * {_GP2_TO_GP3_SAVING_PER_GB})::numeric, 2) as estimated_monthly_savings,
           'medium' as confidence,
+          'moderate' as risk,
           'Modify the volume type from gp2 to gp3 (online, no downtime).' as recommended_action,
           account_id
         from aws_ebs_volume
@@ -78,7 +81,8 @@ FINOPS_QUERIES: dict[str, str] = {
           i.instance_id as resource,
           0 as estimated_monthly_savings,
           'medium' as confidence,
-          'If the instance is abandoned, terminate it and delete its volumes/snapshots.' as recommended_action,
+          'judgment' as risk,
+          'If abandoned, terminate it and delete its volumes (confirm it is not a cold standby).' as recommended_action,
           i.account_id
         from aws_ec2_instance i
         where i.instance_state = 'stopped'
@@ -93,7 +97,8 @@ FINOPS_QUERIES: dict[str, str] = {
           snapshot_id as resource,
           round((volume_size * 0.05)::numeric, 2) as estimated_monthly_savings,
           'low' as confidence,
-          'Confirm it is outside retention, then delete the snapshot.' as recommended_action,
+          'judgment' as risk,
+          'Confirm it is outside retention/DR policy, then delete the snapshot.' as recommended_action,
           account_id
         from aws_ebs_snapshot
         where start_time < (now() - interval '365 days')

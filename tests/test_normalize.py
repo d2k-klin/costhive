@@ -1,4 +1,4 @@
-from costhive.models import Category, Confidence
+from costhive.models import Category, Confidence, Risk
 from costhive.normalize import (
     infracost_total,
     parse_cloudquery,
@@ -40,6 +40,15 @@ def test_parse_steampipe_accepts_rows_wrapper_and_defaults_account():
     assert f.account_id == "999"
 
 
+def test_parse_steampipe_explicit_risk_wins_else_category_default():
+    # Explicit risk column overrides the per-category default.
+    f = parse_steampipe([{"title": "x", "category": "idle", "risk": "safe"}])[0]
+    assert f.risk is Risk.SAFE
+    # No risk column: 'unused' defaults to SAFE, 'rightsizing' to JUDGMENT.
+    assert parse_steampipe([{"title": "x", "category": "unused"}])[0].risk is Risk.SAFE
+    assert parse_steampipe([{"title": "x", "category": "rightsizing"}])[0].risk is Risk.JUDGMENT
+
+
 def test_parse_cloudquery_relabels_tool():
     rows = [{"title": "x", "category": "unused", "estimated_monthly_savings": 1}]
     f = parse_cloudquery(rows)[0]
@@ -58,11 +67,13 @@ def test_parse_custodian_fans_out_per_resource():
             "resources": [{"VolumeId": "vol-1"}, {"VolumeId": "vol-2"}],
         }
     ]
+    runs[0]["risk"] = "safe"
     findings = parse_custodian(runs, account_id="123")
     assert len(findings) == 2
     assert all(f.tool == "custodian" and f.category is Category.UNUSED for f in findings)
     assert {f.resource for f in findings} == {"vol-1", "vol-2"}
     assert all(f.estimated_monthly_savings == 8.0 for f in findings)
+    assert all(f.risk is Risk.SAFE for f in findings)
 
 
 def test_parse_komiser_flags_only_untagged():
@@ -78,6 +89,7 @@ def test_parse_komiser_flags_only_untagged():
     assert f.category is Category.UNTAGGED
     assert f.resource == "orphan-box"
     assert f.estimated_monthly_savings == 0.0  # governance, not deletable
+    assert f.risk is Risk.SAFE  # applying tags never affects a workload
 
 
 def test_parse_infracost_surfaces_projected_cost():

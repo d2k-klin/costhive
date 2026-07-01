@@ -52,6 +52,43 @@ class Confidence(enum.IntEnum):
         return mapping.get(key, cls.MEDIUM)
 
 
+class Risk(enum.IntEnum):
+    """Effort/impact of acting on a finding — the "don't overpromise" axis.
+
+    Consultants must separate money that is safe to reclaim from money that
+    requires a judgment call. Lower == safer/easier, so quick wins sort naturally.
+    """
+
+    SAFE = 0  # reversible, no workload impact (delete unattached EBS, release EIP)
+    MODERATE = 1  # low-impact change (gp2->gp3 online, apply tags)
+    JUDGMENT = 2  # human judgment / potential impact (rightsize prod, delete snapshot)
+
+    @property
+    def label(self) -> str:
+        return {"SAFE": "Safe", "MODERATE": "Moderate", "JUDGMENT": "Judgment call"}[self.name]
+
+    @classmethod
+    def parse(cls, value: str | int | None) -> Risk:
+        if value is None:
+            return cls.MODERATE
+        if isinstance(value, int) and not isinstance(value, bool):
+            return cls(max(0, min(2, value)))
+        key = str(value).strip().lower().replace("-", "_").replace(" ", "_")
+        mapping = {
+            "safe": cls.SAFE,
+            "reversible": cls.SAFE,
+            "no_impact": cls.SAFE,
+            "moderate": cls.MODERATE,
+            "low": cls.MODERATE,
+            "medium": cls.MODERATE,
+            "judgment": cls.JUDGMENT,
+            "judgment_call": cls.JUDGMENT,
+            "high": cls.JUDGMENT,
+            "destructive": cls.JUDGMENT,
+        }
+        return mapping.get(key, cls.MODERATE)
+
+
 class Category(str, enum.Enum):
     """Savings categories — the axis the exec summary breaks spend down by.
 
@@ -127,6 +164,7 @@ class SavingsFinding:
     description: str
     estimated_monthly_savings: float = 0.0
     confidence: Confidence = Confidence.MEDIUM
+    risk: Risk = Risk.MODERATE
     resource: str = ""
     service: str = ""
     region: str = ""
@@ -140,6 +178,8 @@ class SavingsFinding:
             self.category = Category.parse(self.category)
         if isinstance(self.confidence, (str, int)) and not isinstance(self.confidence, Confidence):
             self.confidence = Confidence.parse(self.confidence)
+        if isinstance(self.risk, (str, int)) and not isinstance(self.risk, Risk):
+            self.risk = Risk.parse(self.risk)
         try:
             self.estimated_monthly_savings = round(max(0.0, float(self.estimated_monthly_savings)), 2)
         except (TypeError, ValueError):
@@ -166,5 +206,6 @@ class SavingsFinding:
         d["category"] = self.category.value
         d["category_label"] = self.category.label
         d["confidence"] = self.confidence.label
+        d["risk"] = self.risk.label
         d["annual_savings"] = self.annual_savings
         return d

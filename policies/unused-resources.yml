@@ -12,6 +12,7 @@ policies:
       category: unused
       monthly_savings_each: 8.0
       confidence: high
+      risk: safe
       recommended_action: "Snapshot then delete, or reattach if still needed."
     filters:
       - Attachments: []
@@ -24,6 +25,7 @@ policies:
       category: unused
       monthly_savings_each: 3.6
       confidence: high
+      risk: safe
       recommended_action: "Release the Elastic IP if no longer needed."
     filters:
       - AssociationId: absent
@@ -35,7 +37,8 @@ policies:
       category: idle
       monthly_savings_each: 120.0
       confidence: medium
-      recommended_action: "Snapshot and stop/delete, or downsize the instance."
+      risk: judgment
+      recommended_action: "Snapshot and stop/delete, or downsize — confirm it is truly unused first."
     filters:
       - type: metrics
         name: DatabaseConnections

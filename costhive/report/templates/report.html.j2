@@ -28,6 +28,14 @@
   .conf { display:inline-block; padding:2px 8px; border-radius:999px; font-size:11px; font-weight:700;
           color:#fff; text-transform:uppercase; letter-spacing:.03em; }
   .conf-High { background:#16a34a; } .conf-Medium { background:#d97706; } .conf-Low { background:#6b7280; }
+  .risk { display:inline-block; padding:2px 8px; border-radius:999px; font-size:11px; font-weight:700;
+          color:#fff; text-transform:uppercase; letter-spacing:.03em; }
+  .risk-Safe { background:#0e9f6e; } .risk-Moderate { background:#c2830a; } .risk-Judgment-call { background:#b91c1c; }
+  .split { display:flex; gap:20px; flex-wrap:wrap; margin-top:12px; }
+  .split .item { flex:1; min-width:180px; }
+  .split .item .l { color:#a7f3d0; font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
+  .split .item .v { font-size:22px; font-weight:700; color:#fff; }
+  .disclaimer { color:#a7f3d0; font-size:12px; margin-top:10px; opacity:.9; }
   section { background:var(--card); border:1px solid var(--line); border-radius:12px;
             padding:18px 20px; margin-bottom:20px; }
   section.alert { border-color:#f59e0b; background:#2b2111; }
@@ -140,6 +148,11 @@
     <div class="l">Total estimated monthly savings</div>
     <div class="n">{{ r.total_monthly_savings | money(r.currency) }}</div>
     <div class="sub">{{ r.annual_savings | money(r.currency) }} / year · {{ r.total }} opportunities across {{ r.by_category | length }} categories</div>
+    <div class="split">
+      <div class="item"><div class="l">✅ Safe to reclaim now</div><div class="v">{{ r.safe_savings | money(r.currency) }}/mo</div></div>
+      <div class="item"><div class="l">⚖️ Needs a judgment call</div><div class="v">{{ r.judgment_savings | money(r.currency) }}/mo</div></div>
+    </div>
+    <div class="disclaimer">Figures are estimates based on public list prices, provided to rank opportunities — validate against your own usage before acting. Safe items are reversible/no-impact; judgment-call items may affect a workload.</div>
     {% endif %}
   </div>
 
@@ -209,13 +222,14 @@
   <section id="sec-top">
     <h2>Top {{ r.top_opportunities | length }} opportunities by dollar impact</h2>
     <table>
-      <thead><tr><th>#</th><th>Monthly savings</th><th>Confidence</th><th>Category</th><th>Tool</th><th>Resource</th><th>Opportunity</th></tr></thead>
+      <thead><tr><th>#</th><th>Monthly savings</th><th>Confidence</th><th>Risk</th><th>Category</th><th>Tool</th><th>Resource</th><th>Opportunity</th></tr></thead>
       <tbody>
       {% for f in r.top_opportunities %}
         <tr>
           <td>{{ loop.index }}</td>
           <td class="money">{{ f.estimated_monthly_savings | money(r.currency) }}</td>
           <td><span class="conf conf-{{ f.confidence.label }}">{{ f.confidence.label }}</span></td>
+          <td><span class="risk risk-{{ f.risk.label | replace(' ', '-') }}">{{ f.risk.label }}</span></td>
           <td>{{ f.category.label }}</td>
           <td>{{ f.tool }}</td>
           <td><code>{{ f.resource or "n/a" }}</code></td>
@@ -259,15 +273,22 @@
         <option value="Medium">Medium</option>
         <option value="Low">Low</option>
       </select>
+      <select id="frisk">
+        <option value="">All risk levels</option>
+        <option value="Safe">Safe</option>
+        <option value="Moderate">Moderate</option>
+        <option value="Judgment call">Judgment call</option>
+      </select>
     </div>
     <table id="findings">
-      <thead><tr><th>Monthly savings</th><th>Confidence</th><th>Category</th><th>Tool</th><th>Resource</th><th>Opportunity</th></tr></thead>
+      <thead><tr><th>Monthly savings</th><th>Confidence</th><th>Risk</th><th>Category</th><th>Tool</th><th>Resource</th><th>Opportunity</th></tr></thead>
       <tbody>
       {% for f in r.findings %}
-        <tr class="frow" data-cat="{{ f.category.value }}" data-tool="{{ f.tool }}" data-conf="{{ f.confidence.label }}"
+        <tr class="frow" data-cat="{{ f.category.value }}" data-tool="{{ f.tool }}" data-conf="{{ f.confidence.label }}" data-risk="{{ f.risk.label }}"
             data-text="{{ (f.title ~ ' ' ~ f.resource ~ ' ' ~ f.description ~ ' ' ~ f.service) | lower }}">
           <td class="money">{{ f.estimated_monthly_savings | money(r.currency) }}</td>
           <td><span class="conf conf-{{ f.confidence.label }}">{{ f.confidence.label }}</span></td>
+          <td><span class="risk risk-{{ f.risk.label | replace(' ', '-') }}">{{ f.risk.label }}</span></td>
           <td>{{ f.category.label }}</td>
           <td>{{ f.tool }}</td>
           <td><code>{{ f.resource or "n/a" }}</code>{% if f.region %}<br><span class="pill">{{ f.region }}</span>{% endif %}</td>
@@ -287,7 +308,7 @@
           </td>
         </tr>
       {% else %}
-        <tr><td colspan="6">{% if r.has_tool_errors %}No opportunities normalized — the run was incomplete.{% else %}No opportunities found.{% endif %}</td></tr>
+        <tr><td colspan="7">{% if r.has_tool_errors %}No opportunities normalized — the run was incomplete.{% else %}No opportunities found.{% endif %}</td></tr>
       {% endfor %}
       </tbody>
     </table>
@@ -302,19 +323,21 @@
   const fcat = document.getElementById('fcat');
   const ftool = document.getElementById('ftool');
   const fconf = document.getElementById('fconf');
+  const frisk = document.getElementById('frisk');
   const rows = Array.from(document.querySelectorAll('.frow'));
   function apply() {
     const text = q.value.trim().toLowerCase();
-    const cat = fcat.value, tool = ftool.value, conf = fconf.value;
+    const cat = fcat.value, tool = ftool.value, conf = fconf.value, risk = frisk.value;
     rows.forEach(r => {
       const ok = (!text || r.dataset.text.includes(text))
         && (!cat || r.dataset.cat === cat)
         && (!tool || r.dataset.tool === tool)
-        && (!conf || r.dataset.conf === conf);
+        && (!conf || r.dataset.conf === conf)
+        && (!risk || r.dataset.risk === risk);
       r.style.display = ok ? '' : 'none';
     });
   }
-  [q, fcat, ftool, fconf].forEach(el => el.addEventListener('input', apply));
+  [q, fcat, ftool, fconf, frisk].forEach(el => el.addEventListener('input', apply));
 </script>
 </body>
 </html>

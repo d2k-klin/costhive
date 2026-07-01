@@ -1,7 +1,7 @@
 import json
 
 from costhive.aggregate import build_report
-from costhive.models import Category, Confidence, SavingsFinding
+from costhive.models import Category, Confidence, Risk, SavingsFinding
 from costhive.report.generator import render_html, render_md, write_reports
 from costhive.tools.base import ToolResult, ToolStatus
 
@@ -15,6 +15,7 @@ def _report(mode="scan", projected=0.0):
             "available",
             estimated_monthly_savings=40.0,
             confidence=Confidence.HIGH,
+            risk=Risk.SAFE,
             resource="vol-1",
             service="ebs",
         ),
@@ -25,6 +26,7 @@ def _report(mode="scan", projected=0.0):
             "low CPU",
             estimated_monthly_savings=12.5,
             confidence=Confidence.MEDIUM,
+            risk=Risk.JUDGMENT,
             resource="i-2",
             service="ec2",
         ),
@@ -48,6 +50,10 @@ def test_render_html_contains_headline_and_money():
     assert "$52.50" in html  # 40 + 12.5
     assert "Acme Corp" in html
     assert "Quick wins" in html  # the high-confidence EBS finding
+    # Safe-vs-judgment split (addendum §5): $40 safe, $12.50 judgment.
+    assert "Safe to reclaim now" in html
+    assert "$40.00" in html
+    assert "Needs a judgment call" in html
 
 
 def test_render_md_contains_category_table():

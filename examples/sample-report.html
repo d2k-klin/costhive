@@ -28,6 +28,14 @@
   .conf { display:inline-block; padding:2px 8px; border-radius:999px; font-size:11px; font-weight:700;
           color:#fff; text-transform:uppercase; letter-spacing:.03em; }
   .conf-High { background:#16a34a; } .conf-Medium { background:#d97706; } .conf-Low { background:#6b7280; }
+  .risk { display:inline-block; padding:2px 8px; border-radius:999px; font-size:11px; font-weight:700;
+          color:#fff; text-transform:uppercase; letter-spacing:.03em; }
+  .risk-Safe { background:#0e9f6e; } .risk-Moderate { background:#c2830a; } .risk-Judgment-call { background:#b91c1c; }
+  .split { display:flex; gap:20px; flex-wrap:wrap; margin-top:12px; }
+  .split .item { flex:1; min-width:180px; }
+  .split .item .l { color:#a7f3d0; font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
+  .split .item .v { font-size:22px; font-weight:700; color:#fff; }
+  .disclaimer { color:#a7f3d0; font-size:12px; margin-top:10px; opacity:.9; }
   section { background:var(--card); border:1px solid var(--line); border-radius:12px;
             padding:18px 20px; margin-bottom:20px; }
   section.alert { border-color:#f59e0b; background:#2b2111; }
@@ -121,6 +129,11 @@ Account: 123456789012<br>    Generated: 2026-07-01 09:00:00 UTC<br>
     <div class="l">Total estimated monthly savings</div>
     <div class="n">$530.00</div>
     <div class="sub">$6,360.00 / year · 7 opportunities across 5 categories</div>
+    <div class="split">
+      <div class="item"><div class="l">✅ Safe to reclaim now</div><div class="v">$45.60/mo</div></div>
+      <div class="item"><div class="l">⚖️ Needs a judgment call</div><div class="v">$478.00/mo</div></div>
+    </div>
+    <div class="disclaimer">Figures are estimates based on public list prices, provided to rank opportunities — validate against your own usage before acting. Safe items are reversible/no-impact; judgment-call items may affect a workload.</div>
   </div>
 
 
@@ -186,6 +199,12 @@ Account: 123456789012<br>    Generated: 2026-07-01 09:00:00 UTC<br>
           <td class="action">Snapshot then delete the volume.</td>
         </tr>
         <tr>
+          <td class="money">$6.40</td>
+          <td>Storage class</td>
+          <td><code>vol-9z8y7x</code></td>
+          <td class="action">Modify volume type gp2 -> gp3 (online).</td>
+        </tr>
+        <tr>
           <td class="money">$3.60</td>
           <td>Unused / orphaned</td>
           <td><code>eipalloc-1234</code></td>
@@ -198,12 +217,13 @@ Account: 123456789012<br>    Generated: 2026-07-01 09:00:00 UTC<br>
   <section id="sec-top">
     <h2>Top 7 opportunities by dollar impact</h2>
     <table>
-      <thead><tr><th>#</th><th>Monthly savings</th><th>Confidence</th><th>Category</th><th>Tool</th><th>Resource</th><th>Opportunity</th></tr></thead>
+      <thead><tr><th>#</th><th>Monthly savings</th><th>Confidence</th><th>Risk</th><th>Category</th><th>Tool</th><th>Resource</th><th>Opportunity</th></tr></thead>
       <tbody>
         <tr>
           <td>1</td>
           <td class="money">$220.00</td>
           <td><span class="conf conf-Medium">Medium</span></td>
+          <td><span class="risk risk-Judgment-call">Judgment call</span></td>
           <td>Idle resources</td>
           <td>custodian</td>
           <td><code>db-prod-legacy</code></td>
@@ -213,6 +233,7 @@ Account: 123456789012<br>    Generated: 2026-07-01 09:00:00 UTC<br>
           <td>2</td>
           <td class="money">$180.00</td>
           <td><span class="conf conf-Medium">Medium</span></td>
+          <td><span class="risk risk-Judgment-call">Judgment call</span></td>
           <td>Rightsizing</td>
           <td>custodian</td>
           <td><code>i-0f9e8d7c</code></td>
@@ -222,6 +243,7 @@ Account: 123456789012<br>    Generated: 2026-07-01 09:00:00 UTC<br>
           <td>3</td>
           <td class="money">$78.00</td>
           <td><span class="conf conf-Medium">Medium</span></td>
+          <td><span class="risk risk-Judgment-call">Judgment call</span></td>
           <td>Rightsizing</td>
           <td>opencost</td>
           <td><code>analytics</code></td>
@@ -231,6 +253,7 @@ Account: 123456789012<br>    Generated: 2026-07-01 09:00:00 UTC<br>
           <td>4</td>
           <td class="money">$42.00</td>
           <td><span class="conf conf-High">High</span></td>
+          <td><span class="risk risk-Safe">Safe</span></td>
           <td>Unused / orphaned</td>
           <td>steampipe</td>
           <td><code>vol-0a1b2c3d</code></td>
@@ -240,6 +263,7 @@ Account: 123456789012<br>    Generated: 2026-07-01 09:00:00 UTC<br>
           <td>5</td>
           <td class="money">$6.40</td>
           <td><span class="conf conf-Medium">Medium</span></td>
+          <td><span class="risk risk-Moderate">Moderate</span></td>
           <td>Storage class</td>
           <td>steampipe</td>
           <td><code>vol-9z8y7x</code></td>
@@ -249,6 +273,7 @@ Account: 123456789012<br>    Generated: 2026-07-01 09:00:00 UTC<br>
           <td>6</td>
           <td class="money">$3.60</td>
           <td><span class="conf conf-High">High</span></td>
+          <td><span class="risk risk-Safe">Safe</span></td>
           <td>Unused / orphaned</td>
           <td>steampipe</td>
           <td><code>eipalloc-1234</code></td>
@@ -258,6 +283,7 @@ Account: 123456789012<br>    Generated: 2026-07-01 09:00:00 UTC<br>
           <td>7</td>
           <td class="money">$0.00</td>
           <td><span class="conf conf-High">High</span></td>
+          <td><span class="risk risk-Safe">Safe</span></td>
           <td>Untagged (governance)</td>
           <td>komiser</td>
           <td><code>prod-worker</code></td>
@@ -307,14 +333,21 @@ Account: 123456789012<br>    Generated: 2026-07-01 09:00:00 UTC<br>
         <option value="Medium">Medium</option>
         <option value="Low">Low</option>
       </select>
+      <select id="frisk">
+        <option value="">All risk levels</option>
+        <option value="Safe">Safe</option>
+        <option value="Moderate">Moderate</option>
+        <option value="Judgment call">Judgment call</option>
+      </select>
     </div>
     <table id="findings">
-      <thead><tr><th>Monthly savings</th><th>Confidence</th><th>Category</th><th>Tool</th><th>Resource</th><th>Opportunity</th></tr></thead>
+      <thead><tr><th>Monthly savings</th><th>Confidence</th><th>Risk</th><th>Category</th><th>Tool</th><th>Resource</th><th>Opportunity</th></tr></thead>
       <tbody>
-        <tr class="frow" data-cat="idle" data-tool="custodian" data-conf="Medium"
+        <tr class="frow" data-cat="idle" data-tool="custodian" data-conf="Medium" data-risk="Judgment call"
             data-text="idle rds instance db-prod-legacy zero db connections over 7 days. rds">
           <td class="money">$220.00</td>
           <td><span class="conf conf-Medium">Medium</span></td>
+          <td><span class="risk risk-Judgment-call">Judgment call</span></td>
           <td>Idle resources</td>
           <td>custodian</td>
           <td><code>db-prod-legacy</code><br><span class="pill">us-east-1</span></td>
@@ -322,16 +355,17 @@ Account: 123456789012<br>    Generated: 2026-07-01 09:00:00 UTC<br>
             <strong>Idle RDS instance</strong>
             <details>
               <summary>details</summary>
-<p>Zero DB connections over 7 days.</p><p class="action">→ Snapshot and stop or delete.</p>              <p><span class="pill">id: eeb00d9c90cf</span> <span class="pill">annual: $2,640.00</span> <span class="pill">source: custodian</span></p>
+<p>Zero DB connections over 7 days.</p><p class="action">→ Snapshot and stop/delete — confirm truly unused.</p>              <p><span class="pill">id: eeb00d9c90cf</span> <span class="pill">annual: $2,640.00</span> <span class="pill">source: custodian</span></p>
             </details>
             <div class="print-only">
-<p style="margin:4px 0">Zero DB connections over 7 days.</p><p class="action" style="margin:4px 0">→ Snapshot and stop or delete.</p>            </div>
+<p style="margin:4px 0">Zero DB connections over 7 days.</p><p class="action" style="margin:4px 0">→ Snapshot and stop/delete — confirm truly unused.</p>            </div>
           </td>
         </tr>
-        <tr class="frow" data-cat="rightsizing" data-tool="custodian" data-conf="Medium"
+        <tr class="frow" data-cat="rightsizing" data-tool="custodian" data-conf="Medium" data-risk="Judgment call"
             data-text="low-utilization ec2 instance i-0f9e8d7c m5.2xlarge under 4% avg cpu over 14 days. ec2">
           <td class="money">$180.00</td>
           <td><span class="conf conf-Medium">Medium</span></td>
+          <td><span class="risk risk-Judgment-call">Judgment call</span></td>
           <td>Rightsizing</td>
           <td>custodian</td>
           <td><code>i-0f9e8d7c</code><br><span class="pill">us-east-1</span></td>
@@ -339,16 +373,17 @@ Account: 123456789012<br>    Generated: 2026-07-01 09:00:00 UTC<br>
             <strong>Low-utilization EC2 instance</strong>
             <details>
               <summary>details</summary>
-<p>m5.2xlarge under 4% avg CPU over 14 days.</p><p class="action">→ Downsize to m5.large.</p>              <p><span class="pill">id: 79d30df83391</span> <span class="pill">annual: $2,160.00</span> <span class="pill">source: custodian</span></p>
+<p>m5.2xlarge under 4% avg CPU over 14 days.</p><p class="action">→ Downsize to m5.large (verify peak-load headroom).</p>              <p><span class="pill">id: 79d30df83391</span> <span class="pill">annual: $2,160.00</span> <span class="pill">source: custodian</span></p>
             </details>
             <div class="print-only">
-<p style="margin:4px 0">m5.2xlarge under 4% avg CPU over 14 days.</p><p class="action" style="margin:4px 0">→ Downsize to m5.large.</p>            </div>
+<p style="margin:4px 0">m5.2xlarge under 4% avg CPU over 14 days.</p><p class="action" style="margin:4px 0">→ Downsize to m5.large (verify peak-load headroom).</p>            </div>
           </td>
         </tr>
-        <tr class="frow" data-cat="rightsizing" data-tool="opencost" data-conf="Medium"
+        <tr class="frow" data-cat="rightsizing" data-tool="opencost" data-conf="Medium" data-risk="Judgment call"
             data-text="over-provisioned namespace: analytics analytics runs at 22% efficiency, wasting ~$78/mo. eks">
           <td class="money">$78.00</td>
           <td><span class="conf conf-Medium">Medium</span></td>
+          <td><span class="risk risk-Judgment-call">Judgment call</span></td>
           <td>Rightsizing</td>
           <td>opencost</td>
           <td><code>analytics</code><br><span class="pill">us-east-1</span></td>
@@ -356,16 +391,17 @@ Account: 123456789012<br>    Generated: 2026-07-01 09:00:00 UTC<br>
             <strong>Over-provisioned namespace: analytics</strong>
             <details>
               <summary>details</summary>
-<p>Runs at 22% efficiency, wasting ~$78/mo.</p><p class="action">→ Right-size CPU/memory requests.</p>              <p><span class="pill">id: aaff28e3fe71</span> <span class="pill">annual: $936.00</span> <span class="pill">source: opencost</span></p>
+<p>Runs at 22% efficiency, wasting ~$78/mo.</p><p class="action">→ Right-size CPU/memory requests (verify headroom).</p>              <p><span class="pill">id: aaff28e3fe71</span> <span class="pill">annual: $936.00</span> <span class="pill">source: opencost</span></p>
             </details>
             <div class="print-only">
-<p style="margin:4px 0">Runs at 22% efficiency, wasting ~$78/mo.</p><p class="action" style="margin:4px 0">→ Right-size CPU/memory requests.</p>            </div>
+<p style="margin:4px 0">Runs at 22% efficiency, wasting ~$78/mo.</p><p class="action" style="margin:4px 0">→ Right-size CPU/memory requests (verify headroom).</p>            </div>
           </td>
         </tr>
-        <tr class="frow" data-cat="unused" data-tool="steampipe" data-conf="High"
+        <tr class="frow" data-cat="unused" data-tool="steampipe" data-conf="High" data-risk="Safe"
             data-text="unattached ebs volume vol-0a1b2c3d volume in 'available' state, still billing. ebs">
           <td class="money">$42.00</td>
           <td><span class="conf conf-High">High</span></td>
+          <td><span class="risk risk-Safe">Safe</span></td>
           <td>Unused / orphaned</td>
           <td>steampipe</td>
           <td><code>vol-0a1b2c3d</code><br><span class="pill">us-east-1</span></td>
@@ -379,10 +415,11 @@ Account: 123456789012<br>    Generated: 2026-07-01 09:00:00 UTC<br>
 <p style="margin:4px 0">Volume in 'available' state, still billing.</p><p class="action" style="margin:4px 0">→ Snapshot then delete the volume.</p>            </div>
           </td>
         </tr>
-        <tr class="frow" data-cat="storage_class" data-tool="steampipe" data-conf="Medium"
+        <tr class="frow" data-cat="storage_class" data-tool="steampipe" data-conf="Medium" data-risk="Moderate"
             data-text="gp2 volume can move to gp3 vol-9z8y7x gp3 is ~20% cheaper at equal performance. ebs">
           <td class="money">$6.40</td>
           <td><span class="conf conf-Medium">Medium</span></td>
+          <td><span class="risk risk-Moderate">Moderate</span></td>
           <td>Storage class</td>
           <td>steampipe</td>
           <td><code>vol-9z8y7x</code><br><span class="pill">us-east-1</span></td>
@@ -390,16 +427,17 @@ Account: 123456789012<br>    Generated: 2026-07-01 09:00:00 UTC<br>
             <strong>gp2 volume can move to gp3</strong>
             <details>
               <summary>details</summary>
-<p>gp3 is ~20% cheaper at equal performance.</p><p class="action">→ Modify volume type gp2 -> gp3.</p>              <p><span class="pill">id: 86c979168445</span> <span class="pill">annual: $76.80</span> <span class="pill">source: steampipe</span></p>
+<p>gp3 is ~20% cheaper at equal performance.</p><p class="action">→ Modify volume type gp2 -> gp3 (online).</p>              <p><span class="pill">id: 86c979168445</span> <span class="pill">annual: $76.80</span> <span class="pill">source: steampipe</span></p>
             </details>
             <div class="print-only">
-<p style="margin:4px 0">gp3 is ~20% cheaper at equal performance.</p><p class="action" style="margin:4px 0">→ Modify volume type gp2 -> gp3.</p>            </div>
+<p style="margin:4px 0">gp3 is ~20% cheaper at equal performance.</p><p class="action" style="margin:4px 0">→ Modify volume type gp2 -> gp3 (online).</p>            </div>
           </td>
         </tr>
-        <tr class="frow" data-cat="unused" data-tool="steampipe" data-conf="High"
+        <tr class="frow" data-cat="unused" data-tool="steampipe" data-conf="High" data-risk="Safe"
             data-text="unassociated elastic ip eipalloc-1234 eip allocated but not attached. ec2">
           <td class="money">$3.60</td>
           <td><span class="conf conf-High">High</span></td>
+          <td><span class="risk risk-Safe">Safe</span></td>
           <td>Unused / orphaned</td>
           <td>steampipe</td>
           <td><code>eipalloc-1234</code><br><span class="pill">eu-central-1</span></td>
@@ -413,10 +451,11 @@ Account: 123456789012<br>    Generated: 2026-07-01 09:00:00 UTC<br>
 <p style="margin:4px 0">EIP allocated but not attached.</p><p class="action" style="margin:4px 0">→ Release the Elastic IP.</p>            </div>
           </td>
         </tr>
-        <tr class="frow" data-cat="untagged" data-tool="komiser" data-conf="High"
+        <tr class="frow" data-cat="untagged" data-tool="komiser" data-conf="High" data-risk="Safe"
             data-text="untagged resource: prod-worker prod-worker costs ~$95/mo but has no cost-allocation tags. ec2">
           <td class="money">$0.00</td>
           <td><span class="conf conf-High">High</span></td>
+          <td><span class="risk risk-Safe">Safe</span></td>
           <td>Untagged (governance)</td>
           <td>komiser</td>
           <td><code>prod-worker</code><br><span class="pill">us-east-1</span></td>
@@ -443,19 +482,21 @@ Account: 123456789012<br>    Generated: 2026-07-01 09:00:00 UTC<br>
   const fcat = document.getElementById('fcat');
   const ftool = document.getElementById('ftool');
   const fconf = document.getElementById('fconf');
+  const frisk = document.getElementById('frisk');
   const rows = Array.from(document.querySelectorAll('.frow'));
   function apply() {
     const text = q.value.trim().toLowerCase();
-    const cat = fcat.value, tool = ftool.value, conf = fconf.value;
+    const cat = fcat.value, tool = ftool.value, conf = fconf.value, risk = frisk.value;
     rows.forEach(r => {
       const ok = (!text || r.dataset.text.includes(text))
         && (!cat || r.dataset.cat === cat)
         && (!tool || r.dataset.tool === tool)
-        && (!conf || r.dataset.conf === conf);
+        && (!conf || r.dataset.conf === conf)
+        && (!risk || r.dataset.risk === risk);
       r.style.display = ok ? '' : 'none';
     });
   }
-  [q, fcat, ftool, fconf].forEach(el => el.addEventListener('input', apply));
+  [q, fcat, ftool, fconf, frisk].forEach(el => el.addEventListener('input', apply));
 </script>
 </body>
 </html>

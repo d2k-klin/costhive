@@ -12,7 +12,7 @@ from __future__ import annotations
 import json
 
 from costhive.auth import AwsContext
-from costhive.models import Category, Confidence, SavingsFinding
+from costhive.models import Category, Confidence, Risk, SavingsFinding
 from costhive.tools.base import CostTool, ToolResult, ToolStatus
 
 
@@ -90,9 +90,11 @@ def _parse_allocation(data: dict | list, cluster: str = "") -> list[SavingsFindi
                     ),
                     estimated_monthly_savings=waste,
                     confidence=Confidence.MEDIUM,
+                    risk=Risk.JUDGMENT,  # cutting requests can throttle a workload
                     resource=ns,
                     service="eks",
-                    recommended_action="Right-size CPU/memory requests to match actual usage.",
+                    recommended_action="Right-size CPU/memory requests to match actual usage "
+                    "(verify headroom for peak load first).",
                 )
             )
     return findings
