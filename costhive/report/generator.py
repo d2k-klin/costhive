@@ -86,6 +86,7 @@ def write_reports(
     html = render_html(report) if ("html" in formats or "pdf" in formats) else None
 
     if "html" in formats:
+        assert html is not None
         html_path = os.path.join(out_dir, "report.html")
         with open(html_path, "w") as fh:
             fh.write(html)
@@ -104,6 +105,7 @@ def write_reports(
         paths["json"] = json_path
 
     if "pdf" in formats:
+        assert html is not None
         pdf_path = os.path.join(out_dir, "report.pdf")
         try:
             render_pdf(html, pdf_path, engine=pdf_engine)

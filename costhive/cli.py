@@ -145,7 +145,7 @@ def scan(
     region_list = [r.strip() for r in regions.split(",")] if regions else None
     logo_uri = _logo_data_uri(logo) if logo else ""
     generated_at = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-    write_kwargs = {"formats": formats, "pdf_engine": pdf_engine, "console": console}
+    write_kwargs: dict = {"formats": formats, "pdf_engine": pdf_engine, "console": console}
 
     try:
         contexts = build_contexts(

@@ -53,9 +53,27 @@ policies:
   changes (estimation logic, bundled-tool version bumps) explicitly.
 - Never put real credentials, account IDs, or ARNs in docs — use `123456789012`.
 
+## CI
+
+CI validates the **project**, never a cloud account — no AWS credentials, no billing
+data, no writes. Required checks on `main`: `lint`, `test`, `policy-check`,
+`tool-integrity`, `build`. Run them locally before pushing:
+
+```bash
+ruff check . && ruff format --check . && mypy costhive
+pytest --cov=costhive
+./scripts/validate-policies.sh      # no remediation actions in policy packs
+python scripts/check-doc-links.py
+```
+
+Bundled-tool versions live in `tool-versions.env` (the single source of truth). Bump
+them there; note the change in the changelog.
+
 ## Ground rules
 
 - Read-only by default. Any action that mutates an account is a deferred v2 feature
   behind an explicit, confirmed flag.
 - Keep parsers defensive: tool output drifts between versions; degrade rather than
   raise.
+- **CI never touches AWS.** Tests use fixtures and mocked STS only. Custodian runs
+  dry-run against fixtures — never a live account, never write actions.

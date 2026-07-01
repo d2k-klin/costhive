@@ -75,7 +75,7 @@ class CloudQueryTool(CostTool):
         Uses `psql`'s ability to emit JSON so we reuse the same column contract as
         Steampipe. Returns None on any failure (missing table, psql absent).
         """
-        if not shutil.which("psql"):
+        if not shutil.which("psql") or not self.db_url:
             return None
         wrapped = f"SELECT json_agg(t) FROM ({sql}) t;"
         proc = self._exec(

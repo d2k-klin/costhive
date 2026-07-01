@@ -1,0 +1,16 @@
+{
+  "totalMonthlyCost": "512.50",
+  "projects": [
+    {
+      "name": "prod",
+      "breakdown": {
+        "totalMonthlyCost": "512.50",
+        "resources": [
+          {"name": "aws_instance.web", "resourceType": "aws_instance", "monthlyCost": "500.00"},
+          {"name": "aws_ebs_volume.data", "resourceType": "aws_ebs_volume", "monthlyCost": "12.50"},
+          {"name": "aws_iam_role.app", "resourceType": "aws_iam_role", "monthlyCost": "0"}
+        ]
+      }
+    }
+  ]
+}

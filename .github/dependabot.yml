@@ -1,0 +1,32 @@
+version: 2
+
+updates:
+  # Python dependencies (pip)
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "deps"
+    labels: ["dependencies"]
+    open-pull-requests-limit: 10
+
+  # GitHub Actions (keeps SHA pins fresh)
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "ci"
+    labels: ["ci", "dependencies"]
+    open-pull-requests-limit: 10
+
+  # Docker base image + pinned tool versions surface as PRs that re-run
+  # tool-integrity + fixture tests (addendum §5).
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "docker"
+    labels: ["dependencies"]

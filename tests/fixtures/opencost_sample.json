@@ -1,0 +1,8 @@
+{
+  "data": [
+    {
+      "analytics": {"totalCost": 100.0, "totalEfficiency": 0.30},
+      "__idle__": {"totalCost": 5.0, "totalEfficiency": 0.0}
+    }
+  ]
+}

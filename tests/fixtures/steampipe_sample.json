@@ -1,0 +1,41 @@
+[
+  {
+    "title": "Unattached EBS volume",
+    "description": "Volume is in the 'available' state and still billing.",
+    "category": "unused",
+    "service": "ebs",
+    "region": "us-east-1",
+    "resource": "vol-0aaaaaaaaaaaaaaa1",
+    "estimated_monthly_savings": "8.00",
+    "confidence": "high",
+    "risk": "safe",
+    "recommended_action": "Snapshot then delete the volume.",
+    "account_id": "123456789012"
+  },
+  {
+    "title": "Unassociated Elastic IP",
+    "description": "Elastic IP is allocated but not associated.",
+    "category": "unused",
+    "service": "ec2",
+    "region": "us-east-1",
+    "resource": "eipalloc-0bbbbbbbbbbbbbbb2",
+    "estimated_monthly_savings": 3.6,
+    "confidence": "high",
+    "risk": "safe",
+    "recommended_action": "Release the Elastic IP if no longer needed.",
+    "account_id": "123456789012"
+  },
+  {
+    "title": "EBS gp2 volume can migrate to gp3",
+    "description": "gp3 delivers baseline performance at ~20% lower per-GB cost.",
+    "category": "storage_class",
+    "service": "ebs",
+    "region": "us-east-1",
+    "resource": "vol-0ccccccccccccccc3",
+    "estimated_monthly_savings": 6.4,
+    "confidence": "medium",
+    "risk": "moderate",
+    "recommended_action": "Modify volume type gp2 -> gp3 (online).",
+    "account_id": "123456789012"
+  }
+]

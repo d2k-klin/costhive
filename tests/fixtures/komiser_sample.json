@@ -1,0 +1,6 @@
+{
+  "resources": [
+    {"name": "tagged-web-1", "service": "ec2", "cost": 100, "tags": [{"key": "owner", "value": "team-a"}], "region": "us-east-1"},
+    {"name": "prod-orphan-worker", "service": "ec2", "cost": 90, "tags": [], "region": "us-east-1"}
+  ]
+}

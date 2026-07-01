@@ -11,6 +11,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Project CI (addendum §4): SHA-pinned `ci.yml` (lint + mypy, test matrix,
+  policy-check, tool-integrity, build, docs, secret-scan, pip-audit),
+  `release.yml` (GHCR + Release from CHANGELOG), `codeql.yml`, and Dependabot.
+- Sanitized tool-output fixtures + golden-file report test + `test_savings.py`
+  (exact savings-math guard), `test_policies.py` (no-remediation assertion), and
+  `test_cli.py`.
+- `tool-versions.env` as the single source of truth for bundled-tool versions.
+- `mypy` type-checking (the `costhive` package is type-clean).
+
+### Changed
+- Pinned all dependencies to current latest: typer 0.26.8, rich 15.0.0,
+  boto3 1.43.38, jinja2 3.1.6, pyyaml 6.0.3, weasyprint 69.0; dev: pytest 9.1.1,
+  pytest-cov 7.1.0, ruff 0.15.20, pip-audit 2.10.1, mypy 2.1.0.
+- Pinned bundled tools: Steampipe 2.4.4, Cloud Custodian 0.9.51, Infracost 0.10.44
+  (documented pins for CloudQuery 6.38.0, Komiser 3.1.22, OpenCost 1.120.4).
+
 ## [0.0.1] - 2026-07-01
 
 Initial release — the money-first sibling to

@@ -27,18 +27,25 @@ RUN ARCH="$(uname -m)" \
     && /tmp/aws/install \
     && rm -rf /tmp/aws /tmp/awscliv2.zip
 
-# Steampipe + AWS plugin (live SQL cost queries).
+# Pinned tool versions come from the single source of truth (tool-versions.env),
+# overridable at build time with --build-arg. Keep the defaults in sync with that file.
+ARG STEAMPIPE_VERSION=2.4.4
+ARG CUSTODIAN_VERSION=0.9.51
+ARG INFRACOST_VERSION=0.10.44
+
+# Steampipe + AWS plugin (live SQL cost queries), pinned.
 RUN useradd -m steampipe \
-    && curl -sSL https://steampipe.io/install/steampipe.sh | sh \
+    && curl -sSL https://steampipe.io/install/steampipe.sh | STEAMPIPE_VERSION="v${STEAMPIPE_VERSION}" sh \
     && su steampipe -c "steampipe plugin install aws" || true
 
-# Infracost (pre-deploy IaC cost estimate).
-RUN curl -sSL https://raw.githubusercontent.com/infracost/infracost/master/scripts/install.sh | sh
+# Infracost (pre-deploy IaC cost estimate), pinned.
+RUN curl -sSL "https://raw.githubusercontent.com/infracost/infracost/master/scripts/install.sh" \
+      | INFRACOST_VERSION="${INFRACOST_VERSION}" sh
 
 # Isolate tool CLIs from CostHive's app dependencies (several pin older boto3/typer).
 RUN python -m venv /opt/tool-venv \
     && /opt/tool-venv/bin/pip install --upgrade pip "setuptools<81" \
-    && /opt/tool-venv/bin/pip install "c7n"        # Cloud Custodian
+    && /opt/tool-venv/bin/pip install "c7n==${CUSTODIAN_VERSION}"        # Cloud Custodian
 
 RUN python -m venv /opt/costhive-venv \
     && /opt/costhive-venv/bin/pip install --upgrade pip
