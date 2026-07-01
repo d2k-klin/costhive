@@ -39,8 +39,12 @@ RUN useradd -m steampipe \
     && su steampipe -c "steampipe plugin install aws" || true
 
 # Infracost (pre-deploy IaC cost estimate), pinned.
-RUN curl -sSL "https://raw.githubusercontent.com/infracost/infracost/master/scripts/install.sh" \
-      | INFRACOST_VERSION="${INFRACOST_VERSION}" sh
+RUN ARCH="$(uname -m | sed 's/x86_64/amd64/' | sed 's/aarch64/arm64/')" \
+    && curl -sSfL "https://github.com/infracost/infracost/releases/download/v${INFRACOST_VERSION}/infracost-linux-${ARCH}.tar.gz" -o /tmp/infracost.tar.gz \
+    && tar -xzf /tmp/infracost.tar.gz -C /tmp \
+    && mv /tmp/infracost-linux-${ARCH} /usr/local/bin/infracost \
+    && chmod +x /usr/local/bin/infracost \
+    && rm -f /tmp/infracost.tar.gz
 
 # Isolate tool CLIs from CostHive's app dependencies (several pin older boto3/typer).
 RUN python -m venv /opt/tool-venv \

@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.11", "3.12"]
+        python-version: ["3.11", "3.12", "3.14"]
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
@@ -72,8 +72,10 @@ jobs:
           . ./tool-versions.env
           pip install -e "." "c7n==${CUSTODIAN_VERSION}"
           curl -sSL https://steampipe.io/install/steampipe.sh | STEAMPIPE_VERSION="v${STEAMPIPE_VERSION}" sh
-          curl -sSL https://raw.githubusercontent.com/infracost/infracost/master/scripts/install.sh \
-            | INFRACOST_VERSION="${INFRACOST_VERSION}" sh
+          curl -sSfL "https://github.com/infracost/infracost/releases/download/v${INFRACOST_VERSION}/infracost-linux-amd64.tar.gz" -o /tmp/infracost.tar.gz \
+            && tar -xzf /tmp/infracost.tar.gz -C /tmp \
+            && sudo mv /tmp/infracost-linux-amd64 /usr/local/bin/infracost \
+            && chmod +x /usr/local/bin/infracost
           echo "/usr/local/bin" >> "$GITHUB_PATH"
       - name: Verify pinned tool versions
         run: ./scripts/verify-tools.sh
