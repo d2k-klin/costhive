@@ -11,6 +11,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.2] - 2026-07-01
+
+### Fixed
+- **Infracost install:** replaced unreliable `curl | sh` install script with direct
+  GitHub Releases download in both `Dockerfile` and CI `tool-integrity` job (fixes
+  `gzip: stdin: not in gzip format` build failures).
+
+### Added
+- **Python 3.14 in CI test matrix:** validates compatibility before merging
+  Dependabot's base-image bump PR.
+
 ## [0.0.1] - 2026-07-01
 
 Initial release — the money-first sibling to
@@ -53,5 +64,6 @@ Initial release — the money-first sibling to
 - Pinned bundled tools: Steampipe 2.4.4, Cloud Custodian 0.9.51, Infracost 0.10.44
   (documented pins for CloudQuery 6.38.0, Komiser 3.1.22, OpenCost 1.120.4).
 
-[Unreleased]: https://github.com/d2k-klin/costhive/compare/v0.0.1...HEAD
+[Unreleased]: https://github.com/d2k-klin/costhive/compare/v0.0.2...HEAD
+[0.0.2]: https://github.com/d2k-klin/costhive/compare/v0.0.1...v0.0.2
 [0.0.1]: https://github.com/d2k-klin/costhive/releases/tag/v0.0.1
