@@ -1,0 +1,62 @@
+name: Bug report
+description: Something went wrong with CostHive.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report! ⚠️ **Do not paste real credentials, account IDs, or
+        role ARNs.** Sanitize with placeholders like `123456789012` and `<role-arn>`.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you expect, and what happened instead?
+      placeholder: I ran a scan and expected findings, but got none.
+    validations:
+      required: true
+  - type: input
+    id: costhive-version
+    attributes:
+      label: CostHive version
+      description: Output of `costhive --version`.
+      placeholder: CostHive 0.0.1
+    validations:
+      required: true
+  - type: textarea
+    id: tool-versions
+    attributes:
+      label: Bundled tool versions
+      description: The "Tools" table from the report, or `costhive tools` output.
+    validations:
+      required: false
+  - type: input
+    id: os
+    attributes:
+      label: OS / environment
+      placeholder: macOS 14 / Ubuntu 22.04 (Docker) / WSL2
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: Command run (sanitized)
+      description: The exact command, with credentials/ARNs/account IDs replaced by placeholders.
+      render: shell
+      placeholder: costhive scan --role-arn <role-arn> --external-id <secret> --yes
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant output / error (sanitized)
+      render: shell
+    validations:
+      required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I confirmed Cost Explorer is enabled (or that this isn't a "no findings" issue).
+        - label: I removed all real credentials, account IDs, and ARNs from this report.

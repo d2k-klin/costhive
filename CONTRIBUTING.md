@@ -21,8 +21,37 @@ Every tool is a `CostTool` subclass (see `costhive/tools/base.py`) plus a parser
 `SavingsFinding` schema. Register it in `costhive/tools/__init__.py`. The
 orchestrator, aggregator and report layer never change.
 
-The golden rule: **attach `estimated_monthly_savings` and an honest `confidence`.**
-The dollar figure is the sort key for the whole report; don't overpromise.
+The golden rule: **attach `estimated_monthly_savings`, an honest `confidence`, and a
+`risk` level.** The dollar figure is the sort key for the whole report; don't
+overpromise, and mark judgment-call actions as such.
+
+## Adding a Cloud Custodian policy pack
+
+Drop a `.yml` file in `policies/`. Each policy needs a `metadata` block CostHive
+reads to attach dollars, a category, confidence, and risk to every matched resource:
+
+```yaml
+policies:
+  - name: my-idle-thing
+    resource: ec2
+    comment: "Short description shown in the report."
+    metadata:
+      category: idle          # see docs/categories.md
+      monthly_savings_each: 30.0
+      confidence: medium       # high | medium | low
+      risk: judgment           # safe | moderate | judgment
+      recommended_action: "What to do, with the trade-off noted."
+    filters: [...]             # NO `actions:` — v1 is report-only (dry-run)
+```
+
+## Docs & changelog
+
+- Docs live in the repo and change **in the same PR** as the code.
+- After changing the CLI, run `python scripts/gen-cli-reference.py` so
+  `docs/usage.md` stays in sync (CI checks this).
+- Add a `CHANGELOG.md` entry under `[Unreleased]`. Call out **savings-impacting**
+  changes (estimation logic, bundled-tool version bumps) explicitly.
+- Never put real credentials, account IDs, or ARNs in docs — use `123456789012`.
 
 ## Ground rules
 

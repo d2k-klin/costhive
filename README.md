@@ -18,6 +18,12 @@ docker compose run --rm costhive scan \
 
 See a rendered example: [examples/sample-report.md](examples/sample-report.md) · [examples/sample-report.html](examples/sample-report.html).
 
+> ⚠️ **Before you run:** basic waste findings work out of the box, but historical
+> spend, forecasts and rightsizing need **Cost Explorer enabled** in the account
+> (~24h to populate). If you get few/no findings, this is almost always why — see
+> [docs/cost-data-setup.md](docs/cost-data-setup.md). Only analyze accounts you're
+> authorized to.
+
 ---
 
 ## Why
@@ -98,7 +104,21 @@ CostHive always runs `sts:GetCallerIdentity` first and prints the account being 
 
 ## Cost-data prerequisites
 
-Unlike a pure inventory scan, full cost value depends on **Cost Explorer** and **Compute Optimizer** being enabled. CostHive probes for these up front and tells you what to turn on rather than failing opaquely. See [docs/prerequisites.md](docs/prerequisites.md).
+Unlike a pure inventory scan, full cost value depends on **Cost Explorer** and **Compute Optimizer** being enabled. CostHive probes for these up front and tells you what to turn on rather than failing opaquely. See [docs/cost-data-setup.md](docs/cost-data-setup.md).
+
+## Documentation
+
+| | |
+|---|---|
+| [Getting started](docs/getting-started.md) | 5-minute first report |
+| [Installation](docs/installation.md) · [Usage](docs/usage.md) | Install methods · every command & flag |
+| [Authentication](docs/authentication.md) · [IAM permissions](docs/iam-permissions.md) | Auth modes · least-privilege policy + client onboarding |
+| [Cost-data setup](docs/cost-data-setup.md) | Enabling Cost Explorer / CUR |
+| [Reports](docs/reports.md) · [Categories](docs/categories.md) | Interpreting savings, confidence & risk |
+| [Tools](docs/tools.md) · [Configuration](docs/configuration.md) · [CI/CD](docs/ci-cd.md) | Bundled tools · config reference · pipelines |
+| [Architecture](docs/architecture.md) · [Troubleshooting](docs/troubleshooting.md) · [FAQ](docs/faq.md) | How it works · fixes · questions |
+
+Full index: [docs/index.md](docs/index.md).
 
 ## CI cost gate
 

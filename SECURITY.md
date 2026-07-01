@@ -5,6 +5,16 @@
 Please report security issues privately via the repository's security advisory
 feature rather than a public issue. We aim to acknowledge within 72 hours.
 
+## Supported versions
+
+CostHive is pre-1.0. Security fixes are applied to the **latest released version**
+only. Pin a version and upgrade to receive fixes.
+
+| Version | Supported |
+|---------|-----------|
+| latest `0.x` | ✅ |
+| older `0.x` | ❌ |
+
 ## Design guarantees
 
 - **Read-only.** The shipped IAM policy grants no write/delete actions.
