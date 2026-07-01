@@ -1,5 +1,5 @@
 # CostHive — single image bundling the FinOps tools so users install nothing but Docker.
-FROM python:3.12-slim
+FROM python:3.14-slim
 
 LABEL org.opencontainers.image.title="CostHive" \
       org.opencontainers.image.description="AWS cost-optimization toolkit — one image, one money-first report." \
