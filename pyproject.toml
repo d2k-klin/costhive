@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "costhive"
-version = "0.0.2"
+version = "0.0.3"
 description = "Clone, point it at an AWS account, and get a clean cost-optimization report from best-in-class open-source FinOps tools."
 readme = "README.md"
 requires-python = ">=3.10"

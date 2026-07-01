@@ -11,6 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.3] - 2026-07-01
+
+### Fixed
+- **Steampipe root user error:** container now runs as non-root `steampipe` user,
+  resolving "Steampipe cannot be run as the root user" failures.
+- **Custodian policy discovery:** set `COSTHIVE_POLICY_DIR=/app/policies` in the
+  Docker image so bundled policies are found correctly when installed as a package.
+- **AWS credentials mount:** updated `docker-compose.yml` to mount `~/.aws` into
+  the non-root user's home (`/home/steampipe/.aws`).
+
 ## [0.0.2] - 2026-07-01
 
 ### Fixed
@@ -64,6 +74,7 @@ Initial release — the money-first sibling to
 - Pinned bundled tools: Steampipe 2.4.4, Cloud Custodian 0.9.51, Infracost 0.10.44
   (documented pins for CloudQuery 6.38.0, Komiser 3.1.22, OpenCost 1.120.4).
 
-[Unreleased]: https://github.com/d2k-klin/costhive/compare/v0.0.2...HEAD
+[Unreleased]: https://github.com/d2k-klin/costhive/compare/v0.0.3...HEAD
+[0.0.3]: https://github.com/d2k-klin/costhive/compare/v0.0.2...v0.0.3
 [0.0.2]: https://github.com/d2k-klin/costhive/compare/v0.0.1...v0.0.2
 [0.0.1]: https://github.com/d2k-klin/costhive/releases/tag/v0.0.1
