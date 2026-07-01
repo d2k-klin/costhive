@@ -1,0 +1,29 @@
+# Run CostHive without installing any FinOps toolchains locally.
+#
+#   docker compose run --rm costhive scan --profile my-aws-profile
+#   docker compose run --rm costhive scan --role-arn arn:aws:iam::1234:role/CostHiveAudit
+#   docker compose run --rm costhive estimate --path /iac
+#
+# Reports appear in ./reports on the host. Read-only AWS creds are mounted in.
+services:
+  costhive:
+    build: .
+    image: costhive:latest
+    volumes:
+      # Mount your AWS credentials read-only so --profile works.
+      - ${HOME}/.aws:/root/.aws:ro
+      # Reports written by the container land here on the host.
+      - ./reports:/app/reports
+      # Mount the IaC directory you want to price (estimate mode) at /iac.
+      - ${COSTHIVE_IAC:-./}:/iac:ro
+    environment:
+      - AWS_PROFILE
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_SESSION_TOKEN
+      - AWS_DEFAULT_REGION
+      # Optional Infracost API key (cloud pricing). Without it, Infracost uses its
+      # bundled pricing where possible.
+      - INFRACOST_API_KEY
+    # Default to writing into the mounted reports dir.
+    command: ["scan", "--out", "/app/reports"]

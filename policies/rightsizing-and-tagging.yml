@@ -1,0 +1,45 @@
+# CostHive Cloud Custodian pack — rightsizing candidates + tagging governance.
+#
+# REPORT-ONLY (dry-run). See unused-resources.yml for the metadata contract.
+policies:
+  - name: ec2-low-utilization
+    resource: ec2
+    comment: "Running instances under 5% average CPU over 14 days are oversized/idle."
+    metadata:
+      category: rightsizing
+      monthly_savings_each: 30.0
+      confidence: medium
+      recommended_action: "Downsize the instance type, or stop it if unused."
+    filters:
+      - "State.Name": running
+      - type: metrics
+        name: CPUUtilization
+        statistics: Average
+        days: 14
+        value: 5
+        op: less-than
+
+  - name: ec2-untagged
+    resource: ec2
+    comment: "Running instances missing cost-allocation tags cannot be charged back."
+    metadata:
+      category: untagged
+      monthly_savings_each: 0.0
+      confidence: high
+      recommended_action: "Apply owner / environment / cost-center tags."
+    filters:
+      - "State.Name": running
+      - or:
+          - "tag:owner": absent
+          - "tag:cost-center": absent
+
+  - name: gp2-volumes
+    resource: ebs
+    comment: "gp2 volumes can move to gp3 for ~20% lower per-GB cost, no downtime."
+    metadata:
+      category: storage_class
+      monthly_savings_each: 5.0
+      confidence: medium
+      recommended_action: "Modify volume type gp2 -> gp3 (online)."
+    filters:
+      - VolumeType: gp2

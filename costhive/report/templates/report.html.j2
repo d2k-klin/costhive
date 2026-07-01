@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CostHive Cost Report — {{ r.client_name or r.account_id or "scan" }}</title>
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --ink:#e2e8f0; --muted:#94a3b8; --line:#334155; --gold:#fbbf24; --green:#22c55e; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+         background:var(--bg); color:var(--ink); }
+  header { padding:28px 32px; border-bottom:1px solid var(--line);
+           background:linear-gradient(135deg,#1e293b,#0f172a); }
+  h1 { margin:0 0 4px; font-size:22px; }
+  h1 .hex { color:var(--gold); }
+  .meta { color:var(--muted); font-size:13px; display:flex; flex-wrap:wrap; gap:16px; margin-top:8px; }
+  .meta code { color:var(--ink); }
+  main { padding:24px 32px; max-width:1200px; margin:0 auto; }
+  .headline { background:linear-gradient(135deg,#064e3b,#022c22); border:1px solid #10b981; border-radius:14px;
+              padding:22px 26px; margin-bottom:22px; }
+  .headline .l { color:#a7f3d0; font-size:13px; text-transform:uppercase; letter-spacing:.05em; }
+  .headline .n { font-size:40px; font-weight:800; color:#fff; line-height:1.1; margin:4px 0; }
+  .headline .sub { color:#a7f3d0; font-size:14px; }
+  .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:24px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px 16px; }
+  .card .n { font-size:24px; font-weight:700; }
+  .card .l { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
+  .conf { display:inline-block; padding:2px 8px; border-radius:999px; font-size:11px; font-weight:700;
+          color:#fff; text-transform:uppercase; letter-spacing:.03em; }
+  .conf-High { background:#16a34a; } .conf-Medium { background:#d97706; } .conf-Low { background:#6b7280; }
+  section { background:var(--card); border:1px solid var(--line); border-radius:12px;
+            padding:18px 20px; margin-bottom:20px; }
+  section.alert { border-color:#f59e0b; background:#2b2111; }
+  section.win { border-color:#10b981; }
+  section h2 { margin:0 0 14px; font-size:16px; }
+  table { width:100%; border-collapse:collapse; }
+  th,td { text-align:left; padding:9px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
+  tr:last-child td { border-bottom:none; }
+  td.money { font-weight:700; color:#34d399; white-space:nowrap; }
+  code { background:#0b1220; padding:1px 6px; border-radius:5px; font-size:12px; word-break:break-all; }
+  .controls { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
+  .controls input, .controls select { background:#0b1220; color:var(--ink); border:1px solid var(--line);
+            border-radius:8px; padding:8px 10px; font-size:13px; }
+  .controls input { flex:1; min-width:200px; }
+  details { margin-top:6px; }
+  summary { cursor:pointer; color:var(--muted); }
+  .action { color:#86efac; }
+  .pill { font-size:11px; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:1px 7px; }
+  .bar { height:10px; border-radius:999px; background:#0b1220; overflow:hidden; min-width:120px; }
+  .bar > span { display:block; height:100%; }
+  footer { color:var(--muted); font-size:12px; text-align:center; padding:24px; }
+  a { color:#60a5fa; }
+  .brand { display:flex; align-items:center; gap:16px; }
+  .brand img { max-height:48px; max-width:180px; border-radius:6px; background:#fff; padding:4px; }
+  .client { font-size:13px; color:var(--gold); font-weight:600; text-transform:uppercase; letter-spacing:.05em; }
+
+  @media screen { .print-only { display:none; } }
+  @media print {
+    @page {
+      size: A4;
+      margin: 18mm 16mm 20mm 16mm;
+      @bottom-center {
+        content: "CostHive — Confidential{% if r.client_name %} — {{ r.client_name }}{% endif %} — page " counter(page) " of " counter(pages);
+        font-size: 9px; color: #6b7280;
+      }
+    }
+    @page :first { @bottom-center { content: none; } }
+    :root { --bg:#fff; --card:#fff; --ink:#111827; --muted:#6b7280; --line:#d1d5db; }
+    body { background:#fff; color:#111827; }
+    header { background:#fff; border-bottom:2px solid #111827; }
+    .headline { background:#ecfdf5; border-color:#10b981; }
+    .headline .l, .headline .sub { color:#047857; }
+    .headline .n { color:#065f46; }
+    td.money { color:#047857; }
+    section.alert { background:#fffbeb; border-color:#f59e0b; }
+    code { background:#f3f4f6; }
+    .controls { display:none !important; }
+    header .meta { display:none !important; }
+    details { display:none !important; }
+    section { page-break-inside: avoid; }
+    h2 { page-break-after: avoid; }
+    .cover { page-break-after: always; text-align:center; padding-top:55mm; }
+    .cover img { max-height:80px; margin-bottom:24px; }
+    .cover .title { font-size:30px; font-weight:700; margin:12px 0; }
+    .cover .client { font-size:20px; color:#b45309; margin-bottom:24px; }
+    .cover .big { font-size:34px; font-weight:800; color:#065f46; margin:18px 0; }
+    .cover .confidential { display:inline-block; border:2px solid #dc2626; color:#dc2626;
+      padding:4px 14px; border-radius:6px; font-weight:700; letter-spacing:.1em; }
+    .cover .meta-block { margin-top:36px; font-size:12px; color:#374151; line-height:1.9; }
+  }
+</style>
+</head>
+<body>
+<div class="print-only cover">
+  {% if r.logo_data_uri %}<img src="{{ r.logo_data_uri }}" alt="logo">{% endif %}
+  <div class="title">⬡ CostHive Cost-Optimization Report</div>
+  {% if r.client_name %}<div class="client">{{ r.client_name }}</div>{% endif %}
+  {% if r.mode == "estimate" %}
+  <div class="big">Projected: {{ r.projected_monthly_cost | money(r.currency) }}/mo</div>
+  {% else %}
+  <div class="big">{{ r.total_monthly_savings | money(r.currency) }}/mo in savings identified</div>
+  {% endif %}
+  <div class="confidential">CONFIDENTIAL</div>
+  <div class="meta-block">
+    {% if r.is_rollup %}Accounts: {{ r.accounts | join(", ") }}<br>
+    {% else %}Account: {{ r.account_id or "n/a" }}<br>{% endif %}
+    Generated: {{ r.generated_at }}<br>
+    CostHive v{{ r.tool_version }}
+  </div>
+</div>
+
+<header>
+  <div class="brand">
+    {% if r.logo_data_uri %}<img src="{{ r.logo_data_uri }}" alt="client logo">{% endif %}
+    <div>
+      {% if r.client_name %}<div class="client">{{ r.client_name }}</div>{% endif %}
+      <h1><span class="hex">⬡</span> CostHive Cost-Optimization Report</h1>
+    </div>
+  </div>
+  <div class="meta">
+    <span>Mode <code>{{ "estimate" if r.mode == "estimate" else "scan" }}</code></span>
+    {% if r.is_rollup %}
+    <span>Accounts <code>{{ r.accounts | join(", ") }}</code></span>
+    {% else %}
+    <span>Account <code>{{ r.account_id or "n/a" }}</code></span>
+    {% endif %}
+    <span>Regions <code>{{ r.regions | join(", ") or "n/a" }}</code></span>
+    <span>Generated <code>{{ r.generated_at }}</code></span>
+    <span>CostHive <code>v{{ r.tool_version }}</code></span>
+  </div>
+</header>
+<main>
+  <div class="headline" id="sec-summary">
+    {% if r.mode == "estimate" %}
+    <div class="l">Projected monthly cost (pre-deploy)</div>
+    <div class="n">{{ r.projected_monthly_cost | money(r.currency) }}</div>
+    <div class="sub">{{ (r.projected_monthly_cost * 12) | money(r.currency) }} / year · {{ r.total }} resources priced</div>
+    {% else %}
+    <div class="l">Total estimated monthly savings</div>
+    <div class="n">{{ r.total_monthly_savings | money(r.currency) }}</div>
+    <div class="sub">{{ r.annual_savings | money(r.currency) }} / year · {{ r.total }} opportunities across {{ r.by_category | length }} categories</div>
+    {% endif %}
+  </div>
+
+  {% if r.has_tool_errors %}
+  <section class="alert">
+    <h2>Run incomplete</h2>
+    <p>One or more tools failed. Treat the totals as a lower bound, not a complete picture.</p>
+    <ul>
+      {% for t in r.tool_errors %}
+      <li><strong>{{ t.name }}</strong>{% if t.message %}: {{ t.message }}{% endif %}</li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  {% if r.cost_data_notes %}
+  <section class="alert">
+    <h2>Cost-data prerequisites</h2>
+    <ul>
+      {% for note in r.cost_data_notes %}<li>{{ note }}</li>{% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  {% if r.mode != "estimate" and r.by_category %}
+  <section id="sec-category">
+    <h2>Savings by category</h2>
+    <table>
+      <thead><tr><th>Category</th><th>Opportunities</th><th>Monthly savings</th><th style="width:40%">Share</th></tr></thead>
+      <tbody>
+      {% set maxsav = r.by_category[0].savings or 1 %}
+      {% for c in r.by_category %}
+        <tr>
+          <td><strong>{{ c.label }}</strong></td>
+          <td>{{ c.count }}</td>
+          <td class="money">{{ c.savings | money(r.currency) }}</td>
+          <td>
+            <div class="bar"><span style="width:{{ (100 * c.savings / maxsav) | round(0, 'floor') }}%;background:{{ category_colors.get(c.category, '#94a3b8') }}"></span></div>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </section>
+  {% endif %}
+
+  {% if r.mode != "estimate" and r.quick_wins %}
+  <section class="win" id="sec-quickwins">
+    <h2>⚡ Quick wins — high confidence, do these first</h2>
+    <table>
+      <thead><tr><th>Monthly savings</th><th>Category</th><th>Resource</th><th>Recommended action</th></tr></thead>
+      <tbody>
+      {% for f in r.quick_wins %}
+        <tr>
+          <td class="money">{{ f.estimated_monthly_savings | money(r.currency) }}</td>
+          <td>{{ f.category.label }}</td>
+          <td><code>{{ f.resource }}</code></td>
+          <td class="action">{{ f.recommended_action or f.title }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </section>
+  {% endif %}
+
+  {% if r.top_opportunities %}
+  <section id="sec-top">
+    <h2>Top {{ r.top_opportunities | length }} opportunities by dollar impact</h2>
+    <table>
+      <thead><tr><th>#</th><th>Monthly savings</th><th>Confidence</th><th>Category</th><th>Tool</th><th>Resource</th><th>Opportunity</th></tr></thead>
+      <tbody>
+      {% for f in r.top_opportunities %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          <td class="money">{{ f.estimated_monthly_savings | money(r.currency) }}</td>
+          <td><span class="conf conf-{{ f.confidence.label }}">{{ f.confidence.label }}</span></td>
+          <td>{{ f.category.label }}</td>
+          <td>{{ f.tool }}</td>
+          <td><code>{{ f.resource or "n/a" }}</code></td>
+          <td>{{ f.title }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </section>
+  {% endif %}
+
+  <section>
+    <h2>Tools</h2>
+    <table>
+      <thead><tr><th>Tool</th><th>Status</th><th>Findings</th><th>Est. savings</th><th>Version</th><th>Notes</th></tr></thead>
+      <tbody>
+      {% for t in r.tools %}
+        <tr><td>{{ t.name }}</td><td><span class="pill">{{ t.status }}</span></td>
+            <td>{{ t.findings }}</td><td class="money">{{ t.savings | money(r.currency) }}</td>
+            <td><span class="pill">{{ t.version or "—" }}</span></td><td>{{ t.message }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section id="sec-findings">
+    <h2>All opportunities</h2>
+    <div class="controls">
+      <input id="q" type="search" placeholder="Filter by text (resource, title, description)…">
+      <select id="fcat">
+        <option value="">All categories</option>
+        {% for c in r.by_category %}<option value="{{ c.category }}">{{ c.label }}</option>{% endfor %}
+      </select>
+      <select id="ftool">
+        <option value="">All tools</option>
+        {% for t in r.tools %}<option value="{{ t.name }}">{{ t.name }}</option>{% endfor %}
+      </select>
+      <select id="fconf">
+        <option value="">All confidence</option>
+        <option value="High">High</option>
+        <option value="Medium">Medium</option>
+        <option value="Low">Low</option>
+      </select>
+    </div>
+    <table id="findings">
+      <thead><tr><th>Monthly savings</th><th>Confidence</th><th>Category</th><th>Tool</th><th>Resource</th><th>Opportunity</th></tr></thead>
+      <tbody>
+      {% for f in r.findings %}
+        <tr class="frow" data-cat="{{ f.category.value }}" data-tool="{{ f.tool }}" data-conf="{{ f.confidence.label }}"
+            data-text="{{ (f.title ~ ' ' ~ f.resource ~ ' ' ~ f.description ~ ' ' ~ f.service) | lower }}">
+          <td class="money">{{ f.estimated_monthly_savings | money(r.currency) }}</td>
+          <td><span class="conf conf-{{ f.confidence.label }}">{{ f.confidence.label }}</span></td>
+          <td>{{ f.category.label }}</td>
+          <td>{{ f.tool }}</td>
+          <td><code>{{ f.resource or "n/a" }}</code>{% if f.region %}<br><span class="pill">{{ f.region }}</span>{% endif %}</td>
+          <td>
+            <strong>{{ f.title }}</strong>
+            {% if r.is_rollup and f.account_id %}<span class="pill">acct {{ f.account_id }}</span>{% endif %}
+            <details>
+              <summary>details</summary>
+              {% if f.description %}<p>{{ f.description }}</p>{% endif %}
+              {% if f.recommended_action %}<p class="action">→ {{ f.recommended_action }}</p>{% endif %}
+              <p><span class="pill">id: {{ f.id }}</span> <span class="pill">annual: {{ f.annual_savings | money(r.currency) }}</span> <span class="pill">source: {{ f.tool }}</span></p>
+            </details>
+            <div class="print-only">
+              {% if f.description %}<p style="margin:4px 0">{{ f.description }}</p>{% endif %}
+              {% if f.recommended_action %}<p class="action" style="margin:4px 0">→ {{ f.recommended_action }}</p>{% endif %}
+            </div>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="6">{% if r.has_tool_errors %}No opportunities normalized — the run was incomplete.{% else %}No opportunities found.{% endif %}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </section>
+</main>
+<footer>
+  Generated by <a href="https://github.com/d2k-klin/costhive">CostHive</a> ·
+  savings are estimates — validate before acting · no data leaves your machine
+</footer>
+<script>
+  const q = document.getElementById('q');
+  const fcat = document.getElementById('fcat');
+  const ftool = document.getElementById('ftool');
+  const fconf = document.getElementById('fconf');
+  const rows = Array.from(document.querySelectorAll('.frow'));
+  function apply() {
+    const text = q.value.trim().toLowerCase();
+    const cat = fcat.value, tool = ftool.value, conf = fconf.value;
+    rows.forEach(r => {
+      const ok = (!text || r.dataset.text.includes(text))
+        && (!cat || r.dataset.cat === cat)
+        && (!tool || r.dataset.tool === tool)
+        && (!conf || r.dataset.conf === conf);
+      r.style.display = ok ? '' : 'none';
+    });
+  }
+  [q, fcat, ftool, fconf].forEach(el => el.addEventListener('input', apply));
+</script>
+</body>
+</html>

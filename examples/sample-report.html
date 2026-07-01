@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CostHive Cost Report — Acme Corp</title>
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --ink:#e2e8f0; --muted:#94a3b8; --line:#334155; --gold:#fbbf24; --green:#22c55e; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+         background:var(--bg); color:var(--ink); }
+  header { padding:28px 32px; border-bottom:1px solid var(--line);
+           background:linear-gradient(135deg,#1e293b,#0f172a); }
+  h1 { margin:0 0 4px; font-size:22px; }
+  h1 .hex { color:var(--gold); }
+  .meta { color:var(--muted); font-size:13px; display:flex; flex-wrap:wrap; gap:16px; margin-top:8px; }
+  .meta code { color:var(--ink); }
+  main { padding:24px 32px; max-width:1200px; margin:0 auto; }
+  .headline { background:linear-gradient(135deg,#064e3b,#022c22); border:1px solid #10b981; border-radius:14px;
+              padding:22px 26px; margin-bottom:22px; }
+  .headline .l { color:#a7f3d0; font-size:13px; text-transform:uppercase; letter-spacing:.05em; }
+  .headline .n { font-size:40px; font-weight:800; color:#fff; line-height:1.1; margin:4px 0; }
+  .headline .sub { color:#a7f3d0; font-size:14px; }
+  .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:24px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px 16px; }
+  .card .n { font-size:24px; font-weight:700; }
+  .card .l { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
+  .conf { display:inline-block; padding:2px 8px; border-radius:999px; font-size:11px; font-weight:700;
+          color:#fff; text-transform:uppercase; letter-spacing:.03em; }
+  .conf-High { background:#16a34a; } .conf-Medium { background:#d97706; } .conf-Low { background:#6b7280; }
+  section { background:var(--card); border:1px solid var(--line); border-radius:12px;
+            padding:18px 20px; margin-bottom:20px; }
+  section.alert { border-color:#f59e0b; background:#2b2111; }
+  section.win { border-color:#10b981; }
+  section h2 { margin:0 0 14px; font-size:16px; }
+  table { width:100%; border-collapse:collapse; }
+  th,td { text-align:left; padding:9px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
+  tr:last-child td { border-bottom:none; }
+  td.money { font-weight:700; color:#34d399; white-space:nowrap; }
+  code { background:#0b1220; padding:1px 6px; border-radius:5px; font-size:12px; word-break:break-all; }
+  .controls { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
+  .controls input, .controls select { background:#0b1220; color:var(--ink); border:1px solid var(--line);
+            border-radius:8px; padding:8px 10px; font-size:13px; }
+  .controls input { flex:1; min-width:200px; }
+  details { margin-top:6px; }
+  summary { cursor:pointer; color:var(--muted); }
+  .action { color:#86efac; }
+  .pill { font-size:11px; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:1px 7px; }
+  .bar { height:10px; border-radius:999px; background:#0b1220; overflow:hidden; min-width:120px; }
+  .bar > span { display:block; height:100%; }
+  footer { color:var(--muted); font-size:12px; text-align:center; padding:24px; }
+  a { color:#60a5fa; }
+  .brand { display:flex; align-items:center; gap:16px; }
+  .brand img { max-height:48px; max-width:180px; border-radius:6px; background:#fff; padding:4px; }
+  .client { font-size:13px; color:var(--gold); font-weight:600; text-transform:uppercase; letter-spacing:.05em; }
+
+  @media screen { .print-only { display:none; } }
+  @media print {
+    @page {
+      size: A4;
+      margin: 18mm 16mm 20mm 16mm;
+      @bottom-center {
+        content: "CostHive — Confidential — Acme Corp — page " counter(page) " of " counter(pages);
+        font-size: 9px; color: #6b7280;
+      }
+    }
+    @page :first { @bottom-center { content: none; } }
+    :root { --bg:#fff; --card:#fff; --ink:#111827; --muted:#6b7280; --line:#d1d5db; }
+    body { background:#fff; color:#111827; }
+    header { background:#fff; border-bottom:2px solid #111827; }
+    .headline { background:#ecfdf5; border-color:#10b981; }
+    .headline .l, .headline .sub { color:#047857; }
+    .headline .n { color:#065f46; }
+    td.money { color:#047857; }
+    section.alert { background:#fffbeb; border-color:#f59e0b; }
+    code { background:#f3f4f6; }
+    .controls { display:none !important; }
+    header .meta { display:none !important; }
+    details { display:none !important; }
+    section { page-break-inside: avoid; }
+    h2 { page-break-after: avoid; }
+    .cover { page-break-after: always; text-align:center; padding-top:55mm; }
+    .cover img { max-height:80px; margin-bottom:24px; }
+    .cover .title { font-size:30px; font-weight:700; margin:12px 0; }
+    .cover .client { font-size:20px; color:#b45309; margin-bottom:24px; }
+    .cover .big { font-size:34px; font-weight:800; color:#065f46; margin:18px 0; }
+    .cover .confidential { display:inline-block; border:2px solid #dc2626; color:#dc2626;
+      padding:4px 14px; border-radius:6px; font-weight:700; letter-spacing:.1em; }
+    .cover .meta-block { margin-top:36px; font-size:12px; color:#374151; line-height:1.9; }
+  }
+</style>
+</head>
+<body>
+<div class="print-only cover">
+  <div class="title">⬡ CostHive Cost-Optimization Report</div>
+<div class="client">Acme Corp</div>  <div class="big">$530.00/mo in savings identified</div>
+  <div class="confidential">CONFIDENTIAL</div>
+  <div class="meta-block">
+Account: 123456789012<br>    Generated: 2026-07-01 09:00:00 UTC<br>
+    CostHive v0.0.1
+  </div>
+</div>
+
+<header>
+  <div class="brand">
+    <div>
+<div class="client">Acme Corp</div>      <h1><span class="hex">⬡</span> CostHive Cost-Optimization Report</h1>
+    </div>
+  </div>
+  <div class="meta">
+    <span>Mode <code>scan</code></span>
+    <span>Account <code>123456789012</code></span>
+    <span>Regions <code>us-east-1, eu-central-1</code></span>
+    <span>Generated <code>2026-07-01 09:00:00 UTC</code></span>
+    <span>CostHive <code>v0.0.1</code></span>
+  </div>
+</header>
+<main>
+  <div class="headline" id="sec-summary">
+    <div class="l">Total estimated monthly savings</div>
+    <div class="n">$530.00</div>
+    <div class="sub">$6,360.00 / year · 7 opportunities across 5 categories</div>
+  </div>
+
+
+
+  <section id="sec-category">
+    <h2>Savings by category</h2>
+    <table>
+      <thead><tr><th>Category</th><th>Opportunities</th><th>Monthly savings</th><th style="width:40%">Share</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Rightsizing</strong></td>
+          <td>2</td>
+          <td class="money">$258.00</td>
+          <td>
+            <div class="bar"><span style="width:100.0%;background:#d97706"></span></div>
+          </td>
+        </tr>
+        <tr>
+          <td><strong>Idle resources</strong></td>
+          <td>1</td>
+          <td class="money">$220.00</td>
+          <td>
+            <div class="bar"><span style="width:85.0%;background:#dc2626"></span></div>
+          </td>
+        </tr>
+        <tr>
+          <td><strong>Unused / orphaned</strong></td>
+          <td>2</td>
+          <td class="money">$45.60</td>
+          <td>
+            <div class="bar"><span style="width:17.0%;background:#7c3aed"></span></div>
+          </td>
+        </tr>
+        <tr>
+          <td><strong>Storage class</strong></td>
+          <td>1</td>
+          <td class="money">$6.40</td>
+          <td>
+            <div class="bar"><span style="width:2.0%;background:#0891b2"></span></div>
+          </td>
+        </tr>
+        <tr>
+          <td><strong>Untagged (governance)</strong></td>
+          <td>1</td>
+          <td class="money">$0.00</td>
+          <td>
+            <div class="bar"><span style="width:0.0%;background:#6b7280"></span></div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="win" id="sec-quickwins">
+    <h2>⚡ Quick wins — high confidence, do these first</h2>
+    <table>
+      <thead><tr><th>Monthly savings</th><th>Category</th><th>Resource</th><th>Recommended action</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="money">$42.00</td>
+          <td>Unused / orphaned</td>
+          <td><code>vol-0a1b2c3d</code></td>
+          <td class="action">Snapshot then delete the volume.</td>
+        </tr>
+        <tr>
+          <td class="money">$3.60</td>
+          <td>Unused / orphaned</td>
+          <td><code>eipalloc-1234</code></td>
+          <td class="action">Release the Elastic IP.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="sec-top">
+    <h2>Top 7 opportunities by dollar impact</h2>
+    <table>
+      <thead><tr><th>#</th><th>Monthly savings</th><th>Confidence</th><th>Category</th><th>Tool</th><th>Resource</th><th>Opportunity</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td class="money">$220.00</td>
+          <td><span class="conf conf-Medium">Medium</span></td>
+          <td>Idle resources</td>
+          <td>custodian</td>
+          <td><code>db-prod-legacy</code></td>
+          <td>Idle RDS instance</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td class="money">$180.00</td>
+          <td><span class="conf conf-Medium">Medium</span></td>
+          <td>Rightsizing</td>
+          <td>custodian</td>
+          <td><code>i-0f9e8d7c</code></td>
+          <td>Low-utilization EC2 instance</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td class="money">$78.00</td>
+          <td><span class="conf conf-Medium">Medium</span></td>
+          <td>Rightsizing</td>
+          <td>opencost</td>
+          <td><code>analytics</code></td>
+          <td>Over-provisioned namespace: analytics</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td class="money">$42.00</td>
+          <td><span class="conf conf-High">High</span></td>
+          <td>Unused / orphaned</td>
+          <td>steampipe</td>
+          <td><code>vol-0a1b2c3d</code></td>
+          <td>Unattached EBS volume</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td class="money">$6.40</td>
+          <td><span class="conf conf-Medium">Medium</span></td>
+          <td>Storage class</td>
+          <td>steampipe</td>
+          <td><code>vol-9z8y7x</code></td>
+          <td>gp2 volume can move to gp3</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td class="money">$3.60</td>
+          <td><span class="conf conf-High">High</span></td>
+          <td>Unused / orphaned</td>
+          <td>steampipe</td>
+          <td><code>eipalloc-1234</code></td>
+          <td>Unassociated Elastic IP</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td class="money">$0.00</td>
+          <td><span class="conf conf-High">High</span></td>
+          <td>Untagged (governance)</td>
+          <td>komiser</td>
+          <td><code>prod-worker</code></td>
+          <td>Untagged resource: prod-worker</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Tools</h2>
+    <table>
+      <thead><tr><th>Tool</th><th>Status</th><th>Findings</th><th>Est. savings</th><th>Version</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>steampipe</td><td><span class="pill">ok</span></td>
+            <td>3</td><td class="money">$52.00</td>
+            <td><span class="pill">steampipe 0.24.1</span></td><td>5/5 queries ran</td></tr>
+        <tr><td>custodian</td><td><span class="pill">ok</span></td>
+            <td>2</td><td class="money">$400.00</td>
+            <td><span class="pill">custodian 0.9.40</span></td><td>2 policy files evaluated (dry-run)</td></tr>
+        <tr><td>komiser</td><td><span class="pill">ok</span></td>
+            <td>1</td><td class="money">$0.00</td>
+            <td><span class="pill">komiser 4.0.6</span></td><td>1 untagged gap</td></tr>
+        <tr><td>opencost</td><td><span class="pill">ok</span></td>
+            <td>1</td><td class="money">$78.00</td>
+            <td><span class="pill">opencost 1.113</span></td><td>1 namespace finding</td></tr>
+        <tr><td>cloudquery</td><td><span class="pill">skipped</span></td>
+            <td>0</td><td class="money">$0.00</td>
+            <td><span class="pill">—</span></td><td>opt-in — provide --cloudquery-db-url</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="sec-findings">
+    <h2>All opportunities</h2>
+    <div class="controls">
+      <input id="q" type="search" placeholder="Filter by text (resource, title, description)…">
+      <select id="fcat">
+        <option value="">All categories</option>
+<option value="rightsizing">Rightsizing</option><option value="idle">Idle resources</option><option value="unused">Unused / orphaned</option><option value="storage_class">Storage class</option><option value="untagged">Untagged (governance)</option>      </select>
+      <select id="ftool">
+        <option value="">All tools</option>
+<option value="steampipe">steampipe</option><option value="custodian">custodian</option><option value="komiser">komiser</option><option value="opencost">opencost</option><option value="cloudquery">cloudquery</option>      </select>
+      <select id="fconf">
+        <option value="">All confidence</option>
+        <option value="High">High</option>
+        <option value="Medium">Medium</option>
+        <option value="Low">Low</option>
+      </select>
+    </div>
+    <table id="findings">
+      <thead><tr><th>Monthly savings</th><th>Confidence</th><th>Category</th><th>Tool</th><th>Resource</th><th>Opportunity</th></tr></thead>
+      <tbody>
+        <tr class="frow" data-cat="idle" data-tool="custodian" data-conf="Medium"
+            data-text="idle rds instance db-prod-legacy zero db connections over 7 days. rds">
+          <td class="money">$220.00</td>
+          <td><span class="conf conf-Medium">Medium</span></td>
+          <td>Idle resources</td>
+          <td>custodian</td>
+          <td><code>db-prod-legacy</code><br><span class="pill">us-east-1</span></td>
+          <td>
+            <strong>Idle RDS instance</strong>
+            <details>
+              <summary>details</summary>
+<p>Zero DB connections over 7 days.</p><p class="action">→ Snapshot and stop or delete.</p>              <p><span class="pill">id: eeb00d9c90cf</span> <span class="pill">annual: $2,640.00</span> <span class="pill">source: custodian</span></p>
+            </details>
+            <div class="print-only">
+<p style="margin:4px 0">Zero DB connections over 7 days.</p><p class="action" style="margin:4px 0">→ Snapshot and stop or delete.</p>            </div>
+          </td>
+        </tr>
+        <tr class="frow" data-cat="rightsizing" data-tool="custodian" data-conf="Medium"
+            data-text="low-utilization ec2 instance i-0f9e8d7c m5.2xlarge under 4% avg cpu over 14 days. ec2">
+          <td class="money">$180.00</td>
+          <td><span class="conf conf-Medium">Medium</span></td>
+          <td>Rightsizing</td>
+          <td>custodian</td>
+          <td><code>i-0f9e8d7c</code><br><span class="pill">us-east-1</span></td>
+          <td>
+            <strong>Low-utilization EC2 instance</strong>
+            <details>
+              <summary>details</summary>
+<p>m5.2xlarge under 4% avg CPU over 14 days.</p><p class="action">→ Downsize to m5.large.</p>              <p><span class="pill">id: 79d30df83391</span> <span class="pill">annual: $2,160.00</span> <span class="pill">source: custodian</span></p>
+            </details>
+            <div class="print-only">
+<p style="margin:4px 0">m5.2xlarge under 4% avg CPU over 14 days.</p><p class="action" style="margin:4px 0">→ Downsize to m5.large.</p>            </div>
+          </td>
+        </tr>
+        <tr class="frow" data-cat="rightsizing" data-tool="opencost" data-conf="Medium"
+            data-text="over-provisioned namespace: analytics analytics runs at 22% efficiency, wasting ~$78/mo. eks">
+          <td class="money">$78.00</td>
+          <td><span class="conf conf-Medium">Medium</span></td>
+          <td>Rightsizing</td>
+          <td>opencost</td>
+          <td><code>analytics</code><br><span class="pill">us-east-1</span></td>
+          <td>
+            <strong>Over-provisioned namespace: analytics</strong>
+            <details>
+              <summary>details</summary>
+<p>Runs at 22% efficiency, wasting ~$78/mo.</p><p class="action">→ Right-size CPU/memory requests.</p>              <p><span class="pill">id: aaff28e3fe71</span> <span class="pill">annual: $936.00</span> <span class="pill">source: opencost</span></p>
+            </details>
+            <div class="print-only">
+<p style="margin:4px 0">Runs at 22% efficiency, wasting ~$78/mo.</p><p class="action" style="margin:4px 0">→ Right-size CPU/memory requests.</p>            </div>
+          </td>
+        </tr>
+        <tr class="frow" data-cat="unused" data-tool="steampipe" data-conf="High"
+            data-text="unattached ebs volume vol-0a1b2c3d volume in 'available' state, still billing. ebs">
+          <td class="money">$42.00</td>
+          <td><span class="conf conf-High">High</span></td>
+          <td>Unused / orphaned</td>
+          <td>steampipe</td>
+          <td><code>vol-0a1b2c3d</code><br><span class="pill">us-east-1</span></td>
+          <td>
+            <strong>Unattached EBS volume</strong>
+            <details>
+              <summary>details</summary>
+<p>Volume in 'available' state, still billing.</p><p class="action">→ Snapshot then delete the volume.</p>              <p><span class="pill">id: 7abb6bfd4697</span> <span class="pill">annual: $504.00</span> <span class="pill">source: steampipe</span></p>
+            </details>
+            <div class="print-only">
+<p style="margin:4px 0">Volume in 'available' state, still billing.</p><p class="action" style="margin:4px 0">→ Snapshot then delete the volume.</p>            </div>
+          </td>
+        </tr>
+        <tr class="frow" data-cat="storage_class" data-tool="steampipe" data-conf="Medium"
+            data-text="gp2 volume can move to gp3 vol-9z8y7x gp3 is ~20% cheaper at equal performance. ebs">
+          <td class="money">$6.40</td>
+          <td><span class="conf conf-Medium">Medium</span></td>
+          <td>Storage class</td>
+          <td>steampipe</td>
+          <td><code>vol-9z8y7x</code><br><span class="pill">us-east-1</span></td>
+          <td>
+            <strong>gp2 volume can move to gp3</strong>
+            <details>
+              <summary>details</summary>
+<p>gp3 is ~20% cheaper at equal performance.</p><p class="action">→ Modify volume type gp2 -> gp3.</p>              <p><span class="pill">id: 86c979168445</span> <span class="pill">annual: $76.80</span> <span class="pill">source: steampipe</span></p>
+            </details>
+            <div class="print-only">
+<p style="margin:4px 0">gp3 is ~20% cheaper at equal performance.</p><p class="action" style="margin:4px 0">→ Modify volume type gp2 -> gp3.</p>            </div>
+          </td>
+        </tr>
+        <tr class="frow" data-cat="unused" data-tool="steampipe" data-conf="High"
+            data-text="unassociated elastic ip eipalloc-1234 eip allocated but not attached. ec2">
+          <td class="money">$3.60</td>
+          <td><span class="conf conf-High">High</span></td>
+          <td>Unused / orphaned</td>
+          <td>steampipe</td>
+          <td><code>eipalloc-1234</code><br><span class="pill">eu-central-1</span></td>
+          <td>
+            <strong>Unassociated Elastic IP</strong>
+            <details>
+              <summary>details</summary>
+<p>EIP allocated but not attached.</p><p class="action">→ Release the Elastic IP.</p>              <p><span class="pill">id: 081f8d7f2364</span> <span class="pill">annual: $43.20</span> <span class="pill">source: steampipe</span></p>
+            </details>
+            <div class="print-only">
+<p style="margin:4px 0">EIP allocated but not attached.</p><p class="action" style="margin:4px 0">→ Release the Elastic IP.</p>            </div>
+          </td>
+        </tr>
+        <tr class="frow" data-cat="untagged" data-tool="komiser" data-conf="High"
+            data-text="untagged resource: prod-worker prod-worker costs ~$95/mo but has no cost-allocation tags. ec2">
+          <td class="money">$0.00</td>
+          <td><span class="conf conf-High">High</span></td>
+          <td>Untagged (governance)</td>
+          <td>komiser</td>
+          <td><code>prod-worker</code><br><span class="pill">us-east-1</span></td>
+          <td>
+            <strong>Untagged resource: prod-worker</strong>
+            <details>
+              <summary>details</summary>
+<p>Costs ~$95/mo but has no cost-allocation tags.</p><p class="action">→ Apply owner/environment/cost-center tags.</p>              <p><span class="pill">id: c5210cf3fe21</span> <span class="pill">annual: $0.00</span> <span class="pill">source: komiser</span></p>
+            </details>
+            <div class="print-only">
+<p style="margin:4px 0">Costs ~$95/mo but has no cost-allocation tags.</p><p class="action" style="margin:4px 0">→ Apply owner/environment/cost-center tags.</p>            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</main>
+<footer>
+  Generated by <a href="https://github.com/d2k-klin/costhive">CostHive</a> ·
+  savings are estimates — validate before acting · no data leaves your machine
+</footer>
+<script>
+  const q = document.getElementById('q');
+  const fcat = document.getElementById('fcat');
+  const ftool = document.getElementById('ftool');
+  const fconf = document.getElementById('fconf');
+  const rows = Array.from(document.querySelectorAll('.frow'));
+  function apply() {
+    const text = q.value.trim().toLowerCase();
+    const cat = fcat.value, tool = ftool.value, conf = fconf.value;
+    rows.forEach(r => {
+      const ok = (!text || r.dataset.text.includes(text))
+        && (!cat || r.dataset.cat === cat)
+        && (!tool || r.dataset.tool === tool)
+        && (!conf || r.dataset.conf === conf);
+      r.style.display = ok ? '' : 'none';
+    });
+  }
+  [q, fcat, ftool, fconf].forEach(el => el.addEventListener('input', apply));
+</script>
+</body>
+</html>

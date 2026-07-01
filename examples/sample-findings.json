@@ -1,0 +1,222 @@
+{
+  "client_name": "Acme Corp",
+  "mode": "scan",
+  "account_id": "123456789012",
+  "accounts": [],
+  "identity_arn": "arn:aws:iam::123456789012:role/CostHiveAudit",
+  "regions": [
+    "us-east-1",
+    "eu-central-1"
+  ],
+  "generated_at": "2026-07-01 09:00:00 UTC",
+  "costhive_version": "0.0.1",
+  "currency": "USD",
+  "summary": {
+    "total_findings": 7,
+    "total_monthly_savings": 530.0,
+    "annual_savings": 6360.0,
+    "projected_monthly_cost": 0.0,
+    "run_complete": true,
+    "by_category": [
+      {
+        "category": "rightsizing",
+        "label": "Rightsizing",
+        "count": 2,
+        "savings": 258.0,
+        "annual": 3096.0
+      },
+      {
+        "category": "idle",
+        "label": "Idle resources",
+        "count": 1,
+        "savings": 220.0,
+        "annual": 2640.0
+      },
+      {
+        "category": "unused",
+        "label": "Unused / orphaned",
+        "count": 2,
+        "savings": 45.6,
+        "annual": 547.2
+      },
+      {
+        "category": "storage_class",
+        "label": "Storage class",
+        "count": 1,
+        "savings": 6.4,
+        "annual": 76.8
+      },
+      {
+        "category": "untagged",
+        "label": "Untagged (governance)",
+        "count": 1,
+        "savings": 0.0,
+        "annual": 0.0
+      }
+    ],
+    "cost_data_notes": []
+  },
+  "tools": [
+    {
+      "name": "steampipe",
+      "status": "ok",
+      "findings": 3,
+      "savings": 52.0,
+      "message": "5/5 queries ran",
+      "version": "steampipe 0.24.1"
+    },
+    {
+      "name": "custodian",
+      "status": "ok",
+      "findings": 2,
+      "savings": 400.0,
+      "message": "2 policy files evaluated (dry-run)",
+      "version": "custodian 0.9.40"
+    },
+    {
+      "name": "komiser",
+      "status": "ok",
+      "findings": 1,
+      "savings": 0.0,
+      "message": "1 untagged gap",
+      "version": "komiser 4.0.6"
+    },
+    {
+      "name": "opencost",
+      "status": "ok",
+      "findings": 1,
+      "savings": 78.0,
+      "message": "1 namespace finding",
+      "version": "opencost 1.113"
+    },
+    {
+      "name": "cloudquery",
+      "status": "skipped",
+      "findings": 0,
+      "savings": 0,
+      "message": "opt-in \u2014 provide --cloudquery-db-url",
+      "version": ""
+    }
+  ],
+  "findings": [
+    {
+      "tool": "custodian",
+      "category": "idle",
+      "title": "Idle RDS instance",
+      "description": "Zero DB connections over 7 days.",
+      "estimated_monthly_savings": 220.0,
+      "confidence": "Medium",
+      "resource": "db-prod-legacy",
+      "service": "rds",
+      "region": "us-east-1",
+      "currency": "USD",
+      "recommended_action": "Snapshot and stop or delete.",
+      "account_id": "123456789012",
+      "id": "eeb00d9c90cf",
+      "category_label": "Idle resources",
+      "annual_savings": 2640.0
+    },
+    {
+      "tool": "custodian",
+      "category": "rightsizing",
+      "title": "Low-utilization EC2 instance",
+      "description": "m5.2xlarge under 4% avg CPU over 14 days.",
+      "estimated_monthly_savings": 180.0,
+      "confidence": "Medium",
+      "resource": "i-0f9e8d7c",
+      "service": "ec2",
+      "region": "us-east-1",
+      "currency": "USD",
+      "recommended_action": "Downsize to m5.large.",
+      "account_id": "123456789012",
+      "id": "79d30df83391",
+      "category_label": "Rightsizing",
+      "annual_savings": 2160.0
+    },
+    {
+      "tool": "opencost",
+      "category": "rightsizing",
+      "title": "Over-provisioned namespace: analytics",
+      "description": "Runs at 22% efficiency, wasting ~$78/mo.",
+      "estimated_monthly_savings": 78.0,
+      "confidence": "Medium",
+      "resource": "analytics",
+      "service": "eks",
+      "region": "us-east-1",
+      "currency": "USD",
+      "recommended_action": "Right-size CPU/memory requests.",
+      "account_id": "123456789012",
+      "id": "aaff28e3fe71",
+      "category_label": "Rightsizing",
+      "annual_savings": 936.0
+    },
+    {
+      "tool": "steampipe",
+      "category": "unused",
+      "title": "Unattached EBS volume",
+      "description": "Volume in 'available' state, still billing.",
+      "estimated_monthly_savings": 42.0,
+      "confidence": "High",
+      "resource": "vol-0a1b2c3d",
+      "service": "ebs",
+      "region": "us-east-1",
+      "currency": "USD",
+      "recommended_action": "Snapshot then delete the volume.",
+      "account_id": "123456789012",
+      "id": "7abb6bfd4697",
+      "category_label": "Unused / orphaned",
+      "annual_savings": 504.0
+    },
+    {
+      "tool": "steampipe",
+      "category": "storage_class",
+      "title": "gp2 volume can move to gp3",
+      "description": "gp3 is ~20% cheaper at equal performance.",
+      "estimated_monthly_savings": 6.4,
+      "confidence": "Medium",
+      "resource": "vol-9z8y7x",
+      "service": "ebs",
+      "region": "us-east-1",
+      "currency": "USD",
+      "recommended_action": "Modify volume type gp2 -> gp3.",
+      "account_id": "123456789012",
+      "id": "86c979168445",
+      "category_label": "Storage class",
+      "annual_savings": 76.8
+    },
+    {
+      "tool": "steampipe",
+      "category": "unused",
+      "title": "Unassociated Elastic IP",
+      "description": "EIP allocated but not attached.",
+      "estimated_monthly_savings": 3.6,
+      "confidence": "High",
+      "resource": "eipalloc-1234",
+      "service": "ec2",
+      "region": "eu-central-1",
+      "currency": "USD",
+      "recommended_action": "Release the Elastic IP.",
+      "account_id": "123456789012",
+      "id": "081f8d7f2364",
+      "category_label": "Unused / orphaned",
+      "annual_savings": 43.2
+    },
+    {
+      "tool": "komiser",
+      "category": "untagged",
+      "title": "Untagged resource: prod-worker",
+      "description": "Costs ~$95/mo but has no cost-allocation tags.",
+      "estimated_monthly_savings": 0.0,
+      "confidence": "High",
+      "resource": "prod-worker",
+      "service": "ec2",
+      "region": "us-east-1",
+      "currency": "USD",
+      "recommended_action": "Apply owner/environment/cost-center tags.",
+      "account_id": "123456789012",
+      "id": "c5210cf3fe21",
+      "category_label": "Untagged (governance)",
+      "annual_savings": 0.0
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  CostHive cross-account cost-audit role. Deploy this in a client account to let a
+  consultant run CostHive via assume-role. Grants read-only cost/waste access plus
+  Cost Explorer and Compute Optimizer reads. No write/delete permissions.
+
+Parameters:
+  TrustedPrincipalArn:
+    Type: String
+    Description: ARN of the IAM principal (user/role) allowed to assume this role.
+  ExternalId:
+    Type: String
+    Description: Shared secret required on assume-role (defense against confused-deputy).
+    NoEcho: true
+
+Resources:
+  CostHiveAuditRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: CostHiveAudit
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Ref TrustedPrincipalArn
+            Action: sts:AssumeRole
+            Condition:
+              StringEquals:
+                sts:ExternalId: !Ref ExternalId
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/job-function/ViewOnlyAccess
+      Policies:
+        - PolicyName: CostHiveCostAudit
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: CostExplorer
+                Effect: Allow
+                Action:
+                  - ce:Get*
+                  - ce:List*
+                  - ce:Describe*
+                Resource: "*"
+              - Sid: ComputeOptimizer
+                Effect: Allow
+                Action:
+                  - compute-optimizer:Get*
+                Resource: "*"
+              - Sid: CloudWatchMetrics
+                Effect: Allow
+                Action:
+                  - cloudwatch:GetMetricStatistics
+                  - cloudwatch:GetMetricData
+                  - cloudwatch:ListMetrics
+                Resource: "*"
+
+Outputs:
+  RoleArn:
+    Description: Pass this to `costhive scan --role-arn ...`
+    Value: !GetAtt CostHiveAuditRole.Arn

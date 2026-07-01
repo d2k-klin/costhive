@@ -1,0 +1,45 @@
+# CostHive Cloud Custodian pack — unused / orphaned resources.
+#
+# REPORT-ONLY: no `actions:` are defined, and CostHive always runs `custodian run
+# --dryrun`, so nothing here modifies the account. Each policy carries a `metadata`
+# block that CostHive reads to attach a savings category, a per-resource monthly
+# estimate, and a recommended action to every matched resource.
+policies:
+  - name: ebs-unattached
+    resource: ebs
+    comment: "EBS volumes in the 'available' state are unattached but still billing."
+    metadata:
+      category: unused
+      monthly_savings_each: 8.0
+      confidence: high
+      recommended_action: "Snapshot then delete, or reattach if still needed."
+    filters:
+      - Attachments: []
+      - State: available
+
+  - name: eip-unassociated
+    resource: elastic-ip
+    comment: "Elastic IPs not associated with a running resource are billed hourly."
+    metadata:
+      category: unused
+      monthly_savings_each: 3.6
+      confidence: high
+      recommended_action: "Release the Elastic IP if no longer needed."
+    filters:
+      - AssociationId: absent
+
+  - name: rds-idle-no-connections
+    resource: rds
+    comment: "RDS instances with zero connections over 7 days are likely idle."
+    metadata:
+      category: idle
+      monthly_savings_each: 120.0
+      confidence: medium
+      recommended_action: "Snapshot and stop/delete, or downsize the instance."
+    filters:
+      - type: metrics
+        name: DatabaseConnections
+        statistics: Sum
+        days: 7
+        value: 0
+        op: equal

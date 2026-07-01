@@ -1,0 +1,62 @@
+{
+  "Version": "2012-10-17",
+  "Comment": "CostHive read-only cost-audit policy. Attach alongside the AWS-managed ViewOnlyAccess policy, which covers most describe/list/get calls. This adds the cost-specific extras the bundled FinOps tools need (Cost Explorer + Compute Optimizer). No write/delete actions are granted; Cloud Custodian runs in dry-run.",
+  "Statement": [
+    {
+      "Sid": "CostHiveIdentityCheck",
+      "Effect": "Allow",
+      "Action": [
+        "sts:GetCallerIdentity"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "CostHiveCostExplorer",
+      "Effect": "Allow",
+      "Action": [
+        "ce:GetCostAndUsage",
+        "ce:GetCostForecast",
+        "ce:GetReservationUtilization",
+        "ce:GetReservationCoverage",
+        "ce:GetSavingsPlansUtilization",
+        "ce:GetSavingsPlansCoverage",
+        "ce:GetRightsizingRecommendation",
+        "ce:GetCostCategories",
+        "ce:ListCostAllocationTags",
+        "ce:DescribeCostCategoryDefinition"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "CostHiveComputeOptimizer",
+      "Effect": "Allow",
+      "Action": [
+        "compute-optimizer:GetEnrollmentStatus",
+        "compute-optimizer:GetEC2InstanceRecommendations",
+        "compute-optimizer:GetAutoScalingGroupRecommendations",
+        "compute-optimizer:GetEBSVolumeRecommendations",
+        "compute-optimizer:GetLambdaFunctionRecommendations"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "CostHiveCostWasteReadOnly",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:DescribeInstances",
+        "ec2:DescribeVolumes",
+        "ec2:DescribeSnapshots",
+        "ec2:DescribeAddresses",
+        "ec2:DescribeRegions",
+        "cloudwatch:GetMetricStatistics",
+        "cloudwatch:GetMetricData",
+        "cloudwatch:ListMetrics",
+        "rds:DescribeDBInstances",
+        "elasticloadbalancing:DescribeLoadBalancers",
+        "eks:DescribeCluster",
+        "eks:ListClusters"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
