@@ -71,7 +71,7 @@ jobs:
         run: |
           . ./tool-versions.env
           pip install -e "." "c7n==${CUSTODIAN_VERSION}"
-          curl -sSL https://steampipe.io/install/steampipe.sh | STEAMPIPE_VERSION="v${STEAMPIPE_VERSION}" sh
+          sudo /bin/sh -c "curl -sSL https://steampipe.io/install/steampipe.sh | STEAMPIPE_VERSION=v${STEAMPIPE_VERSION} sh"
           curl -sSfL "https://github.com/infracost/infracost/releases/download/v${INFRACOST_VERSION}/infracost-linux-amd64.tar.gz" -o /tmp/infracost.tar.gz \
             && tar -xzf /tmp/infracost.tar.gz -C /tmp \
             && sudo mv /tmp/infracost-linux-amd64 /usr/local/bin/infracost \
