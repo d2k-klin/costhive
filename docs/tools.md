@@ -56,3 +56,10 @@ Run `costhive estimate --path ./terraform`.
 The Docker image pins each tool CLI. Bundled-tool version bumps are called out in the
 [CHANGELOG](../CHANGELOG.md) because they can change findings. `costhive tools` and
 the report's "Tools" table show the running versions for reproducibility.
+
+A weekly [gh-aw](https://github.github.com/gh-aw/) agentic workflow
+(`.github/workflows/tool-version-watch.md`, compiled to `tool-version-watch.lock.yml`)
+runs on the Copilot coding-agent engine to check each tool's upstream releases, bump
+`tool-versions.env`/`Dockerfile` when one is behind, patch any wrapper code the
+release notes flag as breaking, and open a PR — Dependabot can't do this on its own
+since these are release-tag pins, not package-manager manifest entries.

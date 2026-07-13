@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Weekly tool-version watch:** `.github/workflows/tool-version-watch.md` (a
+  [gh-aw](https://github.github.com/gh-aw/) agentic workflow, Copilot engine)
+  checks the 6 bundled tools' upstream releases on a schedule, bumps
+  `tool-versions.env`/`Dockerfile` pins, patches wrapper code for breaking
+  changes, validates, and opens a PR — covers what Dependabot can't see
+  (release-tag pins, not manifest deps).
+
 ## [0.0.5] - 2026-07-02
 
 ### Fixed
