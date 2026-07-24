@@ -16,8 +16,8 @@ required or permitted in the suite.
 
 ## Adding a tool
 
-Every tool is a `CostTool` subclass (see `costhive/tools/base.py`) plus a parser in
-`costhive/normalize.py` that maps the tool's native output into the unified
+Every tool is a `CostTool` subclass (see `costhive/tools/base.py`) plus a parser
+beside the wrapper or in `costhive/normalize.py` that maps native output into the unified
 `SavingsFinding` schema. Register it in `costhive/tools/__init__.py`. The
 orchestrator, aggregator and report layer never change.
 
@@ -66,8 +66,8 @@ pytest --cov=costhive
 python scripts/check-doc-links.py
 ```
 
-Bundled-tool versions live in `tool-versions.env` (the single source of truth). Bump
-them there; note the change in the changelog.
+Tool versions live in `tool-versions.env` (the single source of truth). Keep matching
+Dockerfile `ARG` defaults in sync; note FinOps tool/plugin changes in the changelog.
 
 ## Ground rules
 

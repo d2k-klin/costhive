@@ -71,6 +71,7 @@ class Report:
     # Consultant / evidence metadata.
     client_name: str = ""
     logo_data_uri: str = ""
+    brand: str = "CostHive by Mr.D"
     tool_version: str = __version__
     accounts: list[str] = field(default_factory=list)  # populated for roll-up reports
     is_rollup: bool = False
@@ -110,6 +111,7 @@ class Report:
     def to_dict(self) -> dict:
         return {
             "client_name": self.client_name,
+            "brand": self.brand,
             "mode": self.mode,
             "account_id": self.account_id,
             "accounts": self.accounts,

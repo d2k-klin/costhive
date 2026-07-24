@@ -22,8 +22,9 @@ reference in [usage.md](usage.md#command--flag-reference).
 | `COSTHIVE_KOMISER_EXPORT` | `--komiser-export` | Komiser resources JSON export. |
 | `COSTHIVE_CLOUDQUERY_DB_URL` | `--cloudquery-db-url` | Postgres URL enabling CloudQuery mode. |
 | `COSTHIVE_CLOUDQUERY_SPEC` | `--cloudquery-spec` | CloudQuery sync spec file. |
+| `COSTHIVE_KRR_EXPORT` | `--krr-export` | Robusta KRR JSON export. |
 | `COSTHIVE_IAC_PATH` | `estimate --path` | IaC directory for the `estimate` verb. |
-| `INFRACOST_API_KEY` | — | Optional Infracost cloud-pricing key. |
+| `INFRACOST_API_KEY` | — | Infracost v2 key for `estimate` (`infracost auth login`). |
 
 A flag always overrides the matching environment variable.
 
@@ -43,3 +44,4 @@ to `.env` and adjust.
 | Output directory | `./reports` |
 | PDF engine | `weasyprint` |
 | Region | session region → `AWS_DEFAULT_REGION` → `us-east-1` |
+| Kubernetes | EKS auto-detection; export flags opt in |

@@ -17,8 +17,9 @@ them.
 
 **Cause:** its binary isn't on `PATH`, or an opt-in tool wasn't given its input.
 
-**Fix:** Use the Docker image (bundles the CLIs), or install the tool locally. For
+**Fix:** Use the Docker image for the core CLIs, or install the tool locally. For
 opt-in tools, provide `--komiser-export` / `--cloudquery-db-url` / `--opencost-export`.
+For KRR, provide `--krr-export`.
 A skipped tool is expected, not an error — the report still generates.
 
 ## `Authentication failed` / `Could not verify AWS credentials`

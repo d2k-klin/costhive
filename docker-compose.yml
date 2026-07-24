@@ -22,8 +22,9 @@ services:
       - AWS_SECRET_ACCESS_KEY
       - AWS_SESSION_TOKEN
       - AWS_DEFAULT_REGION
-      # Optional Infracost API key (cloud pricing). Without it, Infracost uses its
-      # bundled pricing where possible.
+      # Infracost v2 API key for the estimate verb (`infracost auth login`).
       - INFRACOST_API_KEY
+      # Optional KRR export path (mount the file into the container first).
+      - COSTHIVE_KRR_EXPORT
     # Default to writing into the mounted reports dir.
     command: ["scan", "--out", "/app/reports"]

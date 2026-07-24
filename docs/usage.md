@@ -5,7 +5,7 @@ CostHive has two verbs:
 - **`scan`** — analyze a live AWS account and rank savings by dollar impact.
 - **`estimate`** — price Terraform/CDK/CFN on disk *before* deploy (no AWS account touched).
 
-Plus `costhive tools` (list bundled tools) and `costhive --version`.
+Plus `costhive tools`, `costhive prerequisites`, and `costhive --version`.
 
 > Examples use Docker (`docker compose run --rm costhive …`). From a source install,
 > drop that prefix and run `costhive …` directly. Placeholders: `123456789012`
@@ -74,12 +74,22 @@ costhive scan --profile p --cloudquery-db-url postgres://user:pass@host/cq \
 
 # OpenCost / EKS (from an OpenCost /allocation export)
 costhive scan --profile p --opencost-export ./allocation.json --yes
+
+# KRR + OpenCost: exact workload actions plus namespace cost in one report
+krr simple -f json --fileoutput ./krr-report.json
+costhive scan --profile p --opencost-export ./allocation.json \
+  --krr-export ./krr-report.json --yes
 ```
+
+There is no `--kubernetes` boolean. CostHive auto-detects EKS and notes when
+Kubernetes exports are missing. Providing either export flag also enables
+Kubernetes analysis for non-EKS clusters.
 
 ### Pre-deploy estimate
 
 ```bash
-docker compose run --rm -e COSTHIVE_IAC=./terraform costhive estimate --path /iac
+INFRACOST_API_KEY=ico-... COSTHIVE_IAC=./terraform \
+  docker compose run --rm costhive estimate --path /iac
 ```
 
 ### Generate a branded client report
@@ -121,6 +131,12 @@ Pre-deploy cost estimate of IaC on disk (Infracost). No AWS account touched.
 | `--out` | str | `./reports` | Output directory for reports. |
 | `--tool-output` | bool | `False` | Stream raw tool output. |
 
+### `costhive prerequisites`
+
+Show credentials, services, and exports needed by each analysis mode.
+
+_No options._
+
 ### `costhive scan`
 
 Analyze one or more live AWS accounts and produce a dollar-ranked savings report.
@@ -131,13 +147,14 @@ Analyze one or more live AWS accounts and produce a dollar-ranked savings report
 | `--role-arn` | list[str] | — | IAM role ARN to assume (STS). Repeat for multi-account analysis. |
 | `--external-id` | str | — | External ID for role assumption. |
 | `--regions` | str | — | Comma-separated regions (e.g. eu-central-1,us-east-1). |
-| `--tools` | str | `steampipe,custodian` | Comma-separated tools. Default: steampipe, custodian. Add komiser/cloudquery/opencost with their respective flags. |
+| `--tools` | str | `steampipe,custodian` | Comma-separated tools. Default: steampipe, custodian. Add komiser/cloudquery/opencost/krr with their respective flags. |
 | `--categories` | str | — | Filter findings to these categories (idle, unused, rightsizing, untagged, commitment, storage_class, off_hours, network). |
 | `--policy-dir` | str | — | Cloud Custodian policy directory (default: bundled). |
 | `--komiser-export` | str | — | Path to a Komiser resources JSON export. |
 | `--cloudquery-db-url` | str | — | Postgres URL to enable CloudQuery mode. |
 | `--cloudquery-spec` | str | — | CloudQuery sync spec file. |
 | `--opencost-export` | str | — | OpenCost /allocation JSON export (EKS). |
+| `--krr-export` | str | — | Robusta KRR JSON export (Kubernetes rightsizing). |
 | `--client-name` | str | — | Client/engagement name for the report header. |
 | `--logo` | str | — | Path to a logo image embedded in the report header. |
 | `--format` | str | `html,md,json` | Comma-separated output formats: html, md, json, pdf. |

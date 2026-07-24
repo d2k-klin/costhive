@@ -14,6 +14,7 @@ from costhive.aggregate import build_report
 from costhive.normalize import parse_custodian, parse_komiser, parse_steampipe
 from costhive.report.generator import render_md
 from costhive.tools.base import ToolResult, ToolStatus
+from costhive.tools.krr import parse_krr
 from costhive.tools.opencost import _parse_allocation
 
 from .conftest import load_fixture
@@ -28,14 +29,21 @@ def _fixed_report():
             "steampipe",
             ToolStatus.OK,
             version="Steampipe v2.4.4",
-            message="5/5 queries ran",
+            message=(
+                "5/5 checks ran; coverage: ebs unattached, eip unassociated, "
+                "ebs gp2 to gp3, stopped instances with ebs, old snapshots"
+            ),
             findings=parse_steampipe(load_fixture("steampipe_sample.json"), account_id="123456789012"),
         ),
         ToolResult(
             "custodian",
             ToolStatus.OK,
             version="custodian 0.9.51",
-            message="2 policy file(s) evaluated (dry-run, no changes made)",
+            message=(
+                "6 policies across 2 file(s) evaluated (dry-run, no changes made); coverage: "
+                "ebs unattached, eip unassociated, rds idle no connections, ec2 low utilization, "
+                "ec2 untagged, gp2 volumes"
+            ),
             findings=parse_custodian(load_fixture("custodian_sample.json"), account_id="123456789012"),
         ),
         ToolResult(
@@ -48,8 +56,15 @@ def _fixed_report():
         ToolResult(
             "opencost",
             ToolStatus.OK,
-            version="opencost 1.120.4",
+            version="opencost 1.121.0",
             findings=_parse_allocation(load_fixture("opencost_sample.json"), cluster="prod-eks"),
+        ),
+        ToolResult(
+            "krr",
+            ToolStatus.OK,
+            version="1.29.0",
+            message="1 workload/container recommendation(s) imported",
+            findings=parse_krr(load_fixture("krr_sample.json")),
         ),
     ]
     return build_report(

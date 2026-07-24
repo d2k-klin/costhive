@@ -12,6 +12,7 @@ from costhive.tools.cloudquery import CloudQueryTool
 from costhive.tools.custodian import CustodianTool
 from costhive.tools.infracost import InfracostTool
 from costhive.tools.komiser import KomiserTool
+from costhive.tools.krr import KrrTool
 from costhive.tools.opencost import OpenCostTool
 from costhive.tools.steampipe import SteampipeTool
 
@@ -23,6 +24,7 @@ REGISTRY: dict[str, Callable[..., CostTool]] = {
     "cloudquery": CloudQueryTool,
     "infracost": InfracostTool,
     "opencost": OpenCostTool,
+    "krr": KrrTool,
 }
 
 ALL_TOOLS = list(REGISTRY.keys())
@@ -38,6 +40,9 @@ def build_tools(
     komiser_export: str | None = None,
     cloudquery_db_url: str | None = None,
     cloudquery_spec: str | None = None,
+    opencost_export: str | None = None,
+    krr_export: str | None = None,
+    cluster: str | None = None,
 ) -> list[CostTool]:
     """Instantiate the requested tools, passing through per-tool options."""
     tools: list[CostTool] = []
@@ -51,6 +56,10 @@ def build_tools(
             tools.append(factory(export_path=komiser_export))
         elif name == "cloudquery":
             tools.append(factory(db_url=cloudquery_db_url, spec_path=cloudquery_spec))
+        elif name == "opencost":
+            tools.append(factory(allocation_export=opencost_export, cluster=cluster))
+        elif name == "krr":
+            tools.append(factory(export_path=krr_export))
         else:
             tools.append(factory())
     return tools

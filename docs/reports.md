@@ -1,7 +1,8 @@
 # Reports
 
-CostHive writes a consolidated, money-first report in up to four formats. All
-generation is **local** — no data leaves your machine.
+CostHive writes a consolidated, money-first report in up to four formats. Report
+generation is **local**. CostHive does not upload reports; configured tools may
+still call their documented external services.
 
 ## Formats
 

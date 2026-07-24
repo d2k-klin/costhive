@@ -7,7 +7,7 @@ the `estimate` verb (which touches no AWS account). No test triggers a live scan
 from typer.testing import CliRunner
 
 from costhive import __version__
-from costhive.cli import app
+from costhive.cli import _note_kubernetes, _resolve_tools, app
 
 runner = CliRunner()
 
@@ -18,11 +18,25 @@ def test_version():
     assert __version__ in result.stdout
 
 
-def test_tools_lists_all_six():
+def test_tools_lists_all_seven():
     result = runner.invoke(app, ["tools"])
     assert result.exit_code == 0
-    for name in ("steampipe", "custodian", "komiser", "cloudquery", "opencost", "infracost"):
+    for name in ("steampipe", "custodian", "komiser", "cloudquery", "opencost", "krr", "infracost"):
         assert name in result.stdout
+
+
+def test_prerequisites_explains_kubernetes_inputs():
+    result = runner.invoke(app, ["prerequisites"])
+    assert result.exit_code == 0
+    assert "No --kubernetes switch is needed" in result.stdout
+    assert "--krr-export" in result.stdout
+
+
+def test_kubernetes_inputs_auto_enable_and_detection_is_reported():
+    selected = _resolve_tools("steampipe", None, None, None, "krr.json")
+    assert selected == ["steampipe", "krr"]
+    notes = _note_kubernetes(["prod-eks"], None, None)
+    assert "--opencost-export and/or --krr-export" in notes[0]
 
 
 def test_scan_and_estimate_help():

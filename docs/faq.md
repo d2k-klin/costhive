@@ -6,8 +6,9 @@ Custodian runs in `--dryrun`. Remediation is a deferred v2 feature behind an exp
 flag.
 
 **Does my data leave my machine?**
-No. All analysis and report generation (including PDF) runs locally. Credentials are
-never logged or written to reports.
+CostHive does not upload generated reports, and credentials are never logged or
+written to them. Connected tools can call AWS, Infracost, Prometheus, or other
+services you explicitly configure.
 
 **Do I have to enable Cost Explorer?**
 Not for basic waste findings — but yes for spend history, forecasts, and rightsizing.
@@ -24,7 +25,7 @@ Yes — repeat `--role-arn`. You get a per-account report plus a roll-up. See
 [usage.md](usage.md#scan-multiple-accounts).
 
 **How is this different from just running the tools myself?**
-Zero setup (one Docker image), and one money-first, `$`-ranked report instead of six
+Zero setup (one Docker image), and one money-first, `$`-ranked report instead of
 dashboards to reconcile.
 
 **How does it relate to SentryHive?**
@@ -33,8 +34,8 @@ same orchestration and report engine, but findings rank by **savings** instead o
 severity. A consultant can offer security + cost audits from one family of tools.
 
 **Which tools run by default?**
-Steampipe + Cloud Custodian. Komiser, CloudQuery, and OpenCost are opt-in; Infracost
-powers the separate `estimate` verb. See [tools.md](tools.md).
+Steampipe + Cloud Custodian. Komiser, CloudQuery, OpenCost, and KRR are opt-in;
+Infracost powers the separate `estimate` verb. See [tools.md](tools.md).
 
 **Can I add my own cost checks?**
 Yes — add a Cloud Custodian policy pack (`policies/*.yml`) or a new `CostTool`. See

@@ -65,11 +65,15 @@ class CustodianTool(CostTool):
 
         policy_runs = _collect_policy_runs(policy_files, out_dir)
         findings = parse_custodian(policy_runs, account_id=account_id)
+        policy_names = ", ".join(str(run["policy"]).replace("-", " ") for run in policy_runs)
         return ToolResult(
             self.name,
             ToolStatus.OK,
             findings=findings,
-            message=f"{ran} policy file(s) evaluated (dry-run, no changes made)",
+            message=(
+                f"{len(policy_runs)} policies across {ran} file(s) evaluated "
+                f"(dry-run, no changes made); coverage: {policy_names}"
+            ),
         )
 
 

@@ -11,7 +11,7 @@ about to be analyzed.
 Cost note: unlike a pure security scan, cost analysis benefits from Cost Explorer
 (`ce:*` read) and Compute Optimizer data. `preflight_cost_access` probes whether
 those are enabled so the tools can degrade gracefully and tell the user what to turn
-on (see docs/prerequisites.md).
+on (see docs/cost-data-setup.md).
 """
 
 from __future__ import annotations

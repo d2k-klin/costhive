@@ -45,6 +45,19 @@ costhive scan
 Never pass keys as CLI flags — they'd leak into shell history and process lists.
 Environment variables only.
 
+## Kubernetes access
+
+AWS credentials can detect EKS clusters, but they do not automatically grant access
+to the Kubernetes API. CostHive therefore ingests local exports:
+
+- OpenCost export generation needs access to its `/allocation` API.
+- KRR export generation needs kubeconfig/RBAC plus Prometheus,
+  kube-state-metrics, and cAdvisor.
+- CostHive itself needs none of those Kubernetes credentials when reading exports.
+
+No `--kubernetes` switch is needed: EKS is auto-detected and either export flag
+opts in. Run `costhive prerequisites` for the complete input matrix.
+
 ## Credential precedence
 
 When a role ARN is given, the profile/env credentials establish a **base session**

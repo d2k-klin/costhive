@@ -4,4 +4,9 @@ Orchestrates best-in-class open-source FinOps tools and produces one consolidate
 dollar-ranked report of savings opportunities.
 """
 
-__version__ = "0.0.3"
+from importlib.metadata import PackageNotFoundError, version
+
+try:
+    __version__ = version("costhive")
+except PackageNotFoundError:
+    __version__ = "0+unknown"

@@ -14,7 +14,7 @@ is: **auth → run tools → normalize → aggregate/rank → report.**
   ┌───────────────────────────────────────────────┐
   │ tools/  (CostTool subclasses)                  │
   │  steampipe · custodian · komiser · cloudquery  │
-  │  · opencost · infracost                        │
+  │  · opencost · krr · infracost                  │
   └──────┬─────────────────────────────────────────┘
          ▼  native JSON/rows
   ┌───────────────┐   parse_* → SavingsFinding
@@ -53,8 +53,8 @@ is: **auth → run tools → normalize → aggregate/rank → report.**
 - **Isolation & resilience.** Each tool runs in a child process with the verified
   (possibly assumed-role) credentials. One tool failing is recorded and never aborts
   the run; missing tools are skipped.
-- **Read-only & local.** No writes to AWS (Custodian is dry-run); no data leaves the
-  machine.
+- **Read-only & report-local.** No writes to AWS (Custodian is dry-run). CostHive
+  keeps generated reports local; configured tools may call their documented APIs.
 
 See the sibling [SentryHive](https://github.com/d2k-klin/sentryhive) for the same
 pattern applied to security (ranked by severity instead of savings).

@@ -1,5 +1,5 @@
 # CostHive — single image bundling the FinOps tools so users install nothing but Docker.
-FROM python:3.12-slim
+FROM python:3.14-slim
 
 LABEL org.opencontainers.image.title="CostHive" \
       org.opencontainers.image.description="AWS cost-optimization toolkit — one image, one money-first report." \
@@ -9,6 +9,14 @@ LABEL org.opencontainers.image.title="CostHive" \
 ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     PATH="/opt/costhive-venv/bin:/opt/tool-venv/bin:/usr/local/steampipe:$PATH"
+
+# Pinned tool versions come from the single source of truth (tool-versions.env),
+# overridable at build time with --build-arg. Keep these defaults in sync with it.
+ARG AWS_CLI_VERSION=2.36.7
+ARG STEAMPIPE_VERSION=2.4.4
+ARG STEAMPIPE_AWS_PLUGIN_VERSION=1.31.0
+ARG CUSTODIAN_VERSION=0.9.51
+ARG INFRACOST_VERSION=2.12.2
 
 # System deps:
 #  - git: IaC checkout for Infracost
@@ -22,27 +30,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # AWS CLI v2 (used by tools that resolve credentials / kubeconfig).
 RUN ARCH="$(uname -m)" \
-    && curl -sSL "https://awscli.amazonaws.com/awscli-exe-linux-${ARCH}.zip" -o /tmp/awscliv2.zip \
+    && curl -sSL "https://awscli.amazonaws.com/awscli-exe-linux-${ARCH}-${AWS_CLI_VERSION}.zip" -o /tmp/awscliv2.zip \
     && unzip -q /tmp/awscliv2.zip -d /tmp \
     && /tmp/aws/install \
+    && aws --version 2>&1 | grep -F "aws-cli/${AWS_CLI_VERSION}" \
     && rm -rf /tmp/aws /tmp/awscliv2.zip
-
-# Pinned tool versions come from the single source of truth (tool-versions.env),
-# overridable at build time with --build-arg. Keep the defaults in sync with that file.
-ARG STEAMPIPE_VERSION=2.4.4
-ARG CUSTODIAN_VERSION=0.9.51
-ARG INFRACOST_VERSION=0.10.44
 
 # Steampipe + AWS plugin (live SQL cost queries), pinned.
 RUN useradd -m steampipe \
     && curl -sSL https://steampipe.io/install/steampipe.sh | STEAMPIPE_VERSION="v${STEAMPIPE_VERSION}" sh \
-    && su steampipe -c "steampipe plugin install aws" || true
+    && su steampipe -c "steampipe plugin install aws@${STEAMPIPE_AWS_PLUGIN_VERSION}"
 
 # Infracost (pre-deploy IaC cost estimate), pinned.
 RUN ARCH="$(uname -m | sed 's/x86_64/amd64/' | sed 's/aarch64/arm64/')" \
-    && curl -sSfL "https://github.com/infracost/infracost/releases/download/v${INFRACOST_VERSION}/infracost-linux-${ARCH}.tar.gz" -o /tmp/infracost.tar.gz \
+    && curl -sSfL "https://github.com/infracost/cli/releases/download/v${INFRACOST_VERSION}/infracost-linux-${ARCH}.tar.gz" -o /tmp/infracost.tar.gz \
     && tar -xzf /tmp/infracost.tar.gz -C /tmp \
-    && mv /tmp/infracost-linux-${ARCH} /usr/local/bin/infracost \
+    && mv /tmp/infracost /usr/local/bin/infracost \
     && chmod +x /usr/local/bin/infracost \
     && rm -f /tmp/infracost.tar.gz
 

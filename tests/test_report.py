@@ -46,6 +46,7 @@ def _report(mode="scan", projected=0.0):
 def test_render_html_contains_headline_and_money():
     html = render_html(_report())
     assert "CostHive Cost-Optimization Report" in html
+    assert "Prepared by CostHive by Mr.D" in html
     assert "Total estimated monthly savings" in html
     assert "$52.50" in html  # 40 + 12.5
     assert "Acme Corp" in html
@@ -58,6 +59,7 @@ def test_render_html_contains_headline_and_money():
 
 def test_render_md_contains_category_table():
     md = render_md(_report())
+    assert "# 🐝 CostHive by Mr.D" in md
     assert "Total estimated monthly savings" in md
     assert "$52.50" in md
     assert "Savings by category" in md
@@ -70,6 +72,18 @@ def test_estimate_mode_shows_projected_cost():
     assert "$742.50" in html
 
 
+def test_empty_report_is_explicit_about_limited_coverage():
+    report = build_report(
+        [ToolResult("steampipe", ToolStatus.OK, message="5/5 checks ran")],
+        account_id="123456789012",
+        identity_arn="arn:aws:iam::123456789012:user/devops",
+        regions=["eu-central-1"],
+        generated_at="2026-07-24 15:00:37 UTC",
+    )
+    assert "not a clean bill of health" in render_html(report)
+    assert "not a clean bill of health" in render_md(report)
+
+
 def test_write_reports_emits_all_formats(tmp_path):
     paths = write_reports(_report(), str(tmp_path), formats=["html", "md", "json"])
     assert set(paths) == {"html", "md", "json"}
@@ -77,6 +91,7 @@ def test_write_reports_emits_all_formats(tmp_path):
         assert (tmp_path / p.split("/")[-1]).exists()
     data = json.loads((tmp_path / "findings.json").read_text())
     assert data["summary"]["total_monthly_savings"] == 52.5
+    assert data["brand"] == "CostHive by Mr.D"
     assert data["mode"] == "scan"
     assert data["findings"][0]["estimated_monthly_savings"] == 40.0
 

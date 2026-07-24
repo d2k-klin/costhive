@@ -1,9 +1,9 @@
 """Infracost tool wrapper — pre-deploy cost estimate for Terraform/CDK/CFN.
 
 This is the `estimate` verb's engine: it does NOT touch a live AWS account. It reads
-IaC on disk and projects monthly cost before anything ships. `infracost breakdown
---format json` yields projects -> breakdown -> resources with `monthlyCost`, which we
-surface as informational findings (the projected spend, not a saving).
+IaC on disk and projects monthly cost before anything ships. `infracost scan --json`
+yields projects and resources with monthly cost components, which we surface as
+informational findings (the projected spend, not a saving).
 """
 
 from __future__ import annotations
@@ -28,13 +28,12 @@ class InfracostTool(CostTool):
     def _run(self, ctx: AwsContext | None, workdir: str) -> ToolResult:
         if not os.path.isdir(self.path):
             return ToolResult(self.name, ToolStatus.ERROR, message=f"IaC path not found: {self.path}")
-        out_file = os.path.join(workdir, "infracost.json")
         proc = self._exec(
-            ["infracost", "breakdown", "--path", self.path, "--format", "json", "--out-file", out_file],
+            ["infracost", "scan", self.path, "--json"],
             progress=True,
             progress_label=self.name,
         )
-        data = _load_json(out_file, proc.stdout)
+        data = _load_json(proc.stdout)
         if data is None:
             return ToolResult(
                 self.name,
@@ -55,13 +54,7 @@ class InfracostTool(CostTool):
         return result
 
 
-def _load_json(out_file: str, stdout: str):
-    if os.path.isfile(out_file):
-        try:
-            with open(out_file) as fh:
-                return json.load(fh)
-        except (OSError, json.JSONDecodeError):
-            pass
+def _load_json(stdout: str):
     stdout = (stdout or "").strip()
     if stdout:
         try:

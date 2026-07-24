@@ -19,7 +19,8 @@ only. Pin a version and upgrade to receive fixes.
 
 - **Read-only.** The shipped IAM policy grants no write/delete actions.
 - **Cloud Custodian runs `--dryrun`.** CostHive never modifies an account in v1.
-- **No data exfiltration.** All analysis and report generation runs locally; no
-  scan data is sent anywhere. PDF rendering is local (WeasyPrint/Chromium).
+- **Reports stay local.** CostHive does not upload generated reports, and PDF
+  rendering is local. Connected tools may call AWS, Infracost, Prometheus, or
+  other endpoints the user explicitly configures.
 - **Credentials** are resolved via standard AWS mechanisms (profile / env / STS
   assume-role) and never logged or written to reports.

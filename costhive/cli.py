@@ -32,7 +32,6 @@ from costhive.report import VALID_FORMATS, write_reports
 from costhive.tools import ALL_TOOLS, DEFAULT_LIVE_TOOLS, build_tools
 from costhive.tools.base import CostTool, ToolResult
 from costhive.tools.infracost import InfracostTool
-from costhive.tools.opencost import OpenCostTool
 
 DEFAULT_FORMATS = ["html", "md", "json"]
 
@@ -74,8 +73,31 @@ def tools():
     table.add_row("komiser", "opt-in (--komiser-export)", "inventory export — untagged cost-allocation gaps")
     table.add_row("cloudquery", "opt-in (--cloudquery-db-url)", "live account → external DB, then SQL")
     table.add_row("opencost", "opt-in (--opencost-export)", "EKS cluster — Kubernetes cost allocation")
+    table.add_row("krr", "opt-in (--krr-export)", "Kubernetes — workload CPU/memory rightsizing")
     table.add_row("infracost", "estimate verb", "local IaC on disk — pre-deploy cost")
     console.print(table)
+
+
+@app.command()
+def prerequisites():
+    """Show credentials, services, and exports needed by each analysis mode."""
+    table = Table(title="CostHive prerequisites")
+    table.add_column("Area")
+    table.add_column("Required")
+    table.add_column("How to provide it")
+    table.add_row("AWS scan", "AWS credentials + read-only IAM", "--profile, environment credentials, or --role-arn")
+    table.add_row("Cross-account", "CostHiveAudit role; external ID if its trust policy requires one", "--role-arn")
+    table.add_row("Historical costs", "Cost Explorer enabled; Compute Optimizer for rightsizing", "AWS account setup")
+    table.add_row("Kubernetes cost", "OpenCost /allocation JSON", "--opencost-export")
+    table.add_row("Kubernetes sizing", "KRR JSON; generating it needs kubeconfig/RBAC + Prometheus", "--krr-export")
+    table.add_row("IaC estimate", "Infracost API key", "INFRACOST_API_KEY")
+    table.add_row("CloudQuery", "Postgres URL + sync spec", "--cloudquery-db-url + --cloudquery-spec")
+    table.add_row("Komiser", "Resources JSON export", "--komiser-export")
+    console.print(table)
+    console.print(
+        "[dim]No --kubernetes switch is needed: EKS is auto-detected, and either Kubernetes export flag "
+        "enables its analysis.[/dim]"
+    )
 
 
 @app.command()
@@ -92,7 +114,7 @@ def scan(
         ",".join(DEFAULT_LIVE_TOOLS),
         "--tools",
         help=f"Comma-separated tools. Default: {', '.join(DEFAULT_LIVE_TOOLS)}. "
-        "Add komiser/cloudquery/opencost with their respective flags.",
+        "Add komiser/cloudquery/opencost/krr with their respective flags.",
     ),
     categories: str = typer.Option(
         None,
@@ -105,6 +127,7 @@ def scan(
     cloudquery_db_url: str = typer.Option(None, "--cloudquery-db-url", help="Postgres URL to enable CloudQuery mode."),
     cloudquery_spec: str = typer.Option(None, "--cloudquery-spec", help="CloudQuery sync spec file."),
     opencost_export: str = typer.Option(None, "--opencost-export", help="OpenCost /allocation JSON export (EKS)."),
+    krr_export: str = typer.Option(None, "--krr-export", help="Robusta KRR JSON export (Kubernetes rightsizing)."),
     client_name: str = typer.Option(None, "--client-name", help="Client/engagement name for the report header."),
     logo: str = typer.Option(None, "--logo", help="Path to a logo image embedded in the report header."),
     output_formats: str = typer.Option(
@@ -135,7 +158,7 @@ def scan(
                       --role-arn arn:aws:iam::2222:role/CostAudit \\
                       --external-id shared-secret --client-name "Acme Corp" --pdf
     """
-    selected = _resolve_tools(tools_opt, komiser_export, cloudquery_db_url, opencost_export)
+    selected = _resolve_tools(tools_opt, komiser_export, cloudquery_db_url, opencost_export, krr_export)
     category_filter = _parse_categories(categories)
     formats = _resolve_formats(output_formats, pdf)
     if pdf_engine not in ("weasyprint", "chromium"):
@@ -166,11 +189,18 @@ def scan(
         access = preflight_cost_access(ctx)
         for note in access.notes:
             console.print(f"[yellow]⚠ {note}[/yellow]")
-        if opencost_export:
-            _note_eks(ctx)
+        detected_clusters = discover_eks_clusters(ctx)
+        kubernetes_notes = _note_kubernetes(detected_clusters, opencost_export, krr_export)
 
         tool_objs = _build_scan_tools(
-            selected, policy_dir, komiser_export, cloudquery_db_url, cloudquery_spec, opencost_export
+            selected,
+            policy_dir,
+            komiser_export,
+            cloudquery_db_url,
+            cloudquery_spec,
+            opencost_export,
+            krr_export,
+            detected_clusters[0] if len(detected_clusters) == 1 else None,
         )
         with tempfile.TemporaryDirectory(prefix="costhive-") as workdir:
             results = _run(tool_objs, ctx, workdir, tool_output=tool_output)
@@ -182,7 +212,7 @@ def scan(
                 generated_at=generated_at,
                 client_name=client_name or "",
                 logo_data_uri=logo_uri,
-                cost_data_notes=access.notes,
+                cost_data_notes=access.notes + kubernetes_notes,
             )
         target = out_dir if len(contexts) == 1 else os.path.join(out_dir, ctx.identity.account_id)
         paths = write_reports(report, target, **write_kwargs)
@@ -245,7 +275,7 @@ def estimate(
 # --------------------------------------------------------------------------- #
 # helpers
 # --------------------------------------------------------------------------- #
-def _resolve_tools(tools_opt: str, komiser_export, cloudquery_db_url, opencost_export) -> list[str]:
+def _resolve_tools(tools_opt: str, komiser_export, cloudquery_db_url, opencost_export, krr_export) -> list[str]:
     selected = [t.strip() for t in tools_opt.split(",") if t.strip()]
     # Auto-enable opt-in tools when their input is supplied.
     if komiser_export and "komiser" not in selected:
@@ -254,6 +284,8 @@ def _resolve_tools(tools_opt: str, komiser_export, cloudquery_db_url, opencost_e
         selected.append("cloudquery")
     if opencost_export and "opencost" not in selected:
         selected.append("opencost")
+    if krr_export and "krr" not in selected:
+        selected.append("krr")
     unknown = [t for t in selected if t not in ALL_TOOLS or t == "infracost"]
     if unknown:
         console.print(
@@ -286,23 +318,25 @@ def _filter_results(results: list[ToolResult], category_filter: set[str] | None)
 
 
 def _build_scan_tools(
-    selected, policy_dir, komiser_export, cloudquery_db_url, cloudquery_spec, opencost_export
+    selected,
+    policy_dir,
+    komiser_export,
+    cloudquery_db_url,
+    cloudquery_spec,
+    opencost_export,
+    krr_export,
+    cluster,
 ) -> list[CostTool]:
-    tools: list[CostTool] = []
-    for name in selected:
-        if name == "opencost":
-            tools.append(OpenCostTool(allocation_export=opencost_export))
-        else:
-            tools.extend(
-                build_tools(
-                    [name],
-                    policy_dir=policy_dir,
-                    komiser_export=komiser_export,
-                    cloudquery_db_url=cloudquery_db_url,
-                    cloudquery_spec=cloudquery_spec,
-                )
-            )
-    return tools
+    return build_tools(
+        selected,
+        policy_dir=policy_dir,
+        komiser_export=komiser_export,
+        cloudquery_db_url=cloudquery_db_url,
+        cloudquery_spec=cloudquery_spec,
+        opencost_export=opencost_export,
+        krr_export=krr_export,
+        cluster=cluster,
+    )
 
 
 def _resolve_formats(output_formats: str, pdf: bool) -> list[str]:
@@ -316,12 +350,17 @@ def _resolve_formats(output_formats: str, pdf: bool) -> list[str]:
     return formats
 
 
-def _note_eks(ctx) -> None:
-    detected = discover_eks_clusters(ctx)
-    if detected:
-        console.print(
-            f"[dim]EKS clusters detected: {', '.join(detected)} — OpenCost analysis enabled via export.[/dim]"
-        )
+def _note_kubernetes(detected: list[str], opencost_export: str | None, krr_export: str | None) -> list[str]:
+    if not detected:
+        return []
+    names = ", ".join(detected)
+    console.print(f"[dim]EKS clusters detected: {names}.[/dim]")
+    if opencost_export or krr_export:
+        return [f"Kubernetes/EKS detected: {names}; supplied exports are included in this report."]
+    return [
+        f"Kubernetes/EKS detected: {names}, but Kubernetes optimization is not included. "
+        "Provide --opencost-export and/or --krr-export."
+    ]
 
 
 def _run(tool_objs: list[CostTool], ctx, workdir: str, tool_output: bool = False):
@@ -400,6 +439,11 @@ def _print_summary(report, paths: dict[str, str]):
         f"   [green]✅ safe to reclaim: ${report.safe_savings:,.2f}/mo[/green] · "
         f"[yellow]⚖️  judgment call: ${report.judgment_savings:,.2f}/mo[/yellow]"
     )
+    if not report.findings and not report.has_tool_errors:
+        console.print(
+            "   [dim]No opportunities matched the completed checks; this is not a clean bill of health. "
+            "Review tool coverage and prerequisites in the report.[/dim]"
+        )
     if report.by_category:
         table = Table(title="Savings by category")
         table.add_column("Category")

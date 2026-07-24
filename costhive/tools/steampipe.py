@@ -52,7 +52,10 @@ class SteampipeTool(CostTool):
                 message="no Steampipe query returned data — is the AWS plugin installed? "
                 + ("; ".join(errors[:3]) if errors else ""),
             )
-        message = f"{ran}/{len(FINOPS_QUERIES)} queries ran" + (f"; {len(errors)} skipped" if errors else "")
+        coverage = ", ".join(name.replace("_", " ") for name in FINOPS_QUERIES)
+        message = f"{ran}/{len(FINOPS_QUERIES)} checks ran; coverage: {coverage}"
+        if errors:
+            message += f"; {len(errors)} skipped"
         return ToolResult(self.name, ToolStatus.OK, findings=findings, message=message)
 
 

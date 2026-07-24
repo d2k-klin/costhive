@@ -222,10 +222,9 @@ def parse_komiser(
 
 
 # --------------------------------------------------------------------------- #
-# Infracost — pre-deploy IaC cost estimate. This is projected *spend*, not savings:
-# `infracost breakdown --format json` yields projects -> breakdown -> resources with
-# `monthlyCost`. We surface the most expensive resources so the user sees cost before
-# it ships. Savings stays $0; the projected cost rides in the description.
+# Infracost — pre-deploy IaC cost estimate. This is projected *spend*, not savings.
+# v2 `scan --json` yields resources with cost components; v0.10 exports remain
+# supported. Savings stays $0; the projected cost rides in the description.
 # --------------------------------------------------------------------------- #
 def parse_infracost(data: dict) -> list[SavingsFinding]:
     findings: list[SavingsFinding] = []
@@ -234,12 +233,13 @@ def parse_infracost(data: dict) -> list[SavingsFinding]:
     for project in data.get("projects", []) or []:
         if not isinstance(project, dict):
             continue
-        project_name = str(project.get("name", ""))
+        project_name = str(project.get("project_name", project.get("name", "")))
         breakdown = project.get("breakdown", {}) or {}
-        for res in breakdown.get("resources", []) or []:
+        resources = breakdown.get("resources", []) if breakdown else project.get("resources", [])
+        for res in resources or []:
             if not isinstance(res, dict):
                 continue
-            monthly = _num(res.get("monthlyCost"))
+            monthly = _num(res.get("monthlyCost")) if "monthlyCost" in res else _infracost_v2_resource_cost(res)
             if monthly <= 0:
                 continue
             name = str(res.get("name", ""))
@@ -249,7 +249,7 @@ def parse_infracost(data: dict) -> list[SavingsFinding]:
                     category=Category.OTHER,
                     title=f"Projected cost: {name}",
                     description=(
-                        f"Terraform resource '{name}'"
+                        f"IaC resource '{name}'"
                         + (f" in {project_name}" if project_name else "")
                         + f" is projected to cost ${monthly:.2f}/mo once deployed."
                     ),
@@ -257,7 +257,7 @@ def parse_infracost(data: dict) -> list[SavingsFinding]:
                     confidence=Confidence.HIGH,
                     risk=Risk.MODERATE,
                     resource=name,
-                    service=str(res.get("resourceType", "")),
+                    service=str(res.get("type", res.get("resourceType", ""))),
                     recommended_action="Review before deploy — rightsize or drop if not required.",
                 )
             )
@@ -271,8 +271,34 @@ def infracost_total(data: dict) -> float:
     total = _num(data.get("totalMonthlyCost"))
     if total:
         return round(total, 2)
+    summary = data.get("summary", {})
+    if isinstance(summary, dict):
+        total = _num(summary.get("total_monthly_cost"))
+        if total:
+            return round(total, 2)
     running = 0.0
     for project in data.get("projects", []) or []:
-        breakdown = project.get("breakdown", {}) if isinstance(project, dict) else {}
-        running += _num(breakdown.get("totalMonthlyCost"))
+        if not isinstance(project, dict):
+            continue
+        breakdown = project.get("breakdown", {})
+        if isinstance(breakdown, dict) and breakdown:
+            running += _num(breakdown.get("totalMonthlyCost"))
+            continue
+        for resource in project.get("resources", []) or []:
+            if isinstance(resource, dict):
+                running += _infracost_v2_resource_cost(resource)
     return round(running, 2)
+
+
+def _infracost_v2_resource_cost(resource: dict) -> float:
+    total = sum(
+        _num(component.get("total_monthly_cost"))
+        for component in resource.get("cost_components", []) or []
+        if isinstance(component, dict)
+    )
+    total += sum(
+        _infracost_v2_resource_cost(child)
+        for child in resource.get("subresources", []) or []
+        if isinstance(child, dict)
+    )
+    return total

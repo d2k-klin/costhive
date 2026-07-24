@@ -1,0 +1,77 @@
+{
+  "scans": [
+    {
+      "object": {
+        "cluster": "prod-eks",
+        "namespace": "payments",
+        "kind": "Deployment",
+        "name": "payments-api",
+        "container": "api",
+        "warnings": [],
+        "allocations": {
+          "requests": {
+            "cpu": 2.0,
+            "memory": 4294967296
+          },
+          "limits": {
+            "cpu": null,
+            "memory": null
+          }
+        }
+      },
+      "recommended": {
+        "requests": {
+          "cpu": {
+            "value": 0.5,
+            "severity": "CRITICAL"
+          },
+          "memory": {
+            "value": 1610612736,
+            "severity": "CRITICAL"
+          }
+        },
+        "limits": {},
+        "info": {}
+      },
+      "severity": "CRITICAL"
+    },
+    {
+      "object": {
+        "cluster": "prod-eks",
+        "namespace": "payments",
+        "kind": "Deployment",
+        "name": "already-sized",
+        "container": "app",
+        "warnings": [],
+        "allocations": {
+          "requests": {
+            "cpu": 0.5,
+            "memory": 536870912
+          }
+        }
+      },
+      "recommended": {
+        "requests": {
+          "cpu": {
+            "value": 0.5,
+            "severity": "GOOD"
+          },
+          "memory": {
+            "value": 536870912,
+            "severity": "GOOD"
+          }
+        }
+      },
+      "severity": "GOOD"
+    }
+  ],
+  "score": 50,
+  "resources": [
+    "cpu",
+    "memory"
+  ],
+  "strategy": {
+    "name": "simple",
+    "settings": {}
+  }
+}

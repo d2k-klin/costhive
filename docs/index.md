@@ -18,7 +18,7 @@ matches what you're doing.
 
 ## Reference — lookup
 - [IAM permissions](iam-permissions.md) — least-privilege policy + client onboarding role.
-- [Tools](tools.md) — the six bundled FinOps tools and their pinned versions.
+- [Tools](tools.md) — the seven integrated FinOps tools and their pinned versions.
 - [Categories](categories.md) — every savings category + how estimates are derived.
 - [Reports](reports.md) — output formats, branding, interpreting savings.
 - [Configuration](configuration.md) — every flag and environment variable.
@@ -30,6 +30,6 @@ matches what you're doing.
 
 ## Trust & safety
 
-CostHive is **read-only**: the shipped IAM policy grants no write/delete actions, and
-Cloud Custodian runs in `--dryrun`. All analysis and report generation runs locally —
-no scan data leaves your machine. See [../SECURITY.md](../SECURITY.md).
+CostHive is **read-only**: the shipped IAM policy grants no write/delete actions,
+and Cloud Custodian runs in `--dryrun`. Reports are generated locally; configured
+tools may call their documented APIs. See [../SECURITY.md](../SECURITY.md).

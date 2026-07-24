@@ -125,6 +125,44 @@ def test_infracost_total_falls_back_to_project_sum():
     assert infracost_total(data) == 15.5
 
 
+def test_parse_infracost_v2_scan_output():
+    data = {
+        "summary": {"total_monthly_cost": "512.50"},
+        "projects": [
+            {
+                "project_name": "prod",
+                "resources": [
+                    {
+                        "name": "aws_instance.web",
+                        "type": "aws_instance",
+                        "cost_components": [{"total_monthly_cost": "500.00"}],
+                        "subresources": [
+                            {
+                                "name": "root_block_device",
+                                "cost_components": [{"total_monthly_cost": "12.50"}],
+                            }
+                        ],
+                    },
+                    {
+                        "name": "aws_iam_role.free",
+                        "type": "aws_iam_role",
+                        "cost_components": [],
+                    },
+                ],
+            }
+        ],
+    }
+    findings = parse_infracost(data)
+    assert len(findings) == 1
+    assert findings[0].resource == "aws_instance.web"
+    assert findings[0].service == "aws_instance"
+    assert "$512.50/mo" in findings[0].description
+    assert infracost_total(data) == 512.5
+
+    data.pop("summary")
+    assert infracost_total(data) == 512.5
+
+
 def test_parsers_tolerate_garbage():
     assert parse_steampipe([{"unexpected": "shape"}])  # does not raise
     assert parse_steampipe(["not a dict", 5, None]) == []

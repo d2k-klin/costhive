@@ -11,13 +11,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.6] - 2026-07-24
+
+### Changed
+- **Savings-impacting tool updates:** Infracost 0.10.44 → 2.12.2,
+  CloudQuery CLI 6.38.0 → 6.41.0, OpenCost 1.120.4 → 1.121.0, and the newly
+  pinned Steampipe AWS plugin at 1.31.0. No affected wrapper flags or parsed
+  output schemas changed outside the Infracost v2 migration described below.
+- **Current Python toolchain:** raised compatible dependency floors (Typer,
+  boto3, Ruff, mypy, types-PyYAML, Hatchling), added `build` to the tracked dev
+  toolset, and moved the Docker/CI default runtime to Python 3.14.
+- **Current CI actions:** refreshed all authored workflow actions to their
+  latest immutable SHAs and regenerated gh-aw workflows with gh-aw 0.83.1.
+- **Pinned supporting CLIs:** AWS CLI 2.36.7 and Gitleaks 8.30.1 now share
+  `tool-versions.env` with the FinOps tools.
+
 ### Added
+- **Kubernetes workload rightsizing:** ingest Robusta KRR 1.29.0 JSON exports
+  through `--krr-export`, preserving exact CPU/memory request changes alongside
+  OpenCost's dollar estimates in the single consolidated report.
+- **Prerequisite visibility:** `costhive prerequisites` documents the AWS role,
+  billing-service, Kubernetes, Prometheus, database, export, and API-key inputs;
+  scans now auto-detect EKS and report when Kubernetes inputs are missing.
 - **Weekly tool-version watch:** `.github/workflows/tool-version-watch.md` (a
   [gh-aw](https://github.github.com/gh-aw/) agentic workflow, Copilot engine)
-  checks the 6 bundled tools' upstream releases on a schedule, bumps
+  checks all pinned tools' upstream releases on a schedule, bumps
   `tool-versions.env`/`Dockerfile` pins, patches wrapper code for breaking
   changes, validates, and opens a PR — covers what Dependabot can't see
   (release-tag pins, not manifest deps).
+- **Full supported-Python CI:** tests now run on every supported minor,
+  Python 3.10 through 3.14.
+
+### Fixed
+- **Report ownership and privacy wording:** every output is branded
+  “CostHive by Mr.D,” and the report accurately distinguishes locally generated
+  artifacts from external services called by configured tools.
+- **Infracost v2 migration:** follow the active `infracost/cli` release line
+  instead of the retired v0 repository, switch `estimate` to `scan --json`,
+  and parse the v2 resource/cost-component schema while retaining support for
+  v0.10 JSON exports.
+- **Reliable Steampipe image:** pin the AWS plugin and fail the Docker build if
+  its installation fails instead of silently shipping an incomplete image.
+- **Tool dependency isolation:** CI now mirrors Docker's separate Custodian
+  virtual environment, so Custodian's strict boto3 pin cannot constrain
+  CostHive's current boto3 release.
+- **Single package version source:** the CLI and reports now read the installed
+  package metadata instead of retaining a stale duplicated version constant.
 
 ## [0.0.5] - 2026-07-02
 
@@ -95,7 +134,8 @@ Initial release — the money-first sibling to
 - Pinned bundled tools: Steampipe 2.4.4, Cloud Custodian 0.9.51, Infracost 0.10.44
   (documented pins for CloudQuery 6.38.0, Komiser 3.1.22, OpenCost 1.120.4).
 
-[Unreleased]: https://github.com/d2k-klin/costhive/compare/v0.0.5...HEAD
+[Unreleased]: https://github.com/d2k-klin/costhive/compare/v0.0.6...HEAD
+[0.0.6]: https://github.com/d2k-klin/costhive/compare/v0.0.5...v0.0.6
 [0.0.5]: https://github.com/d2k-klin/costhive/compare/v0.0.4...v0.0.5
 [0.0.4]: https://github.com/d2k-klin/costhive/compare/v0.0.3...v0.0.4
 [0.0.3]: https://github.com/d2k-klin/costhive/compare/v0.0.2...v0.0.3

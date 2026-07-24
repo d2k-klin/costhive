@@ -14,6 +14,7 @@ from costhive.normalize import (
     parse_steampipe,
 )
 from costhive.tools.base import ToolResult, ToolStatus
+from costhive.tools.krr import parse_krr
 from costhive.tools.opencost import _parse_allocation
 
 from .conftest import load_fixture
@@ -25,11 +26,13 @@ def _scan_report():
     custodian = parse_custodian(load_fixture("custodian_sample.json"), account_id="123456789012")
     komiser = parse_komiser(load_fixture("komiser_sample.json"), account_id="123456789012")
     opencost = _parse_allocation(load_fixture("opencost_sample.json"), cluster="prod-eks")
+    krr = parse_krr(load_fixture("krr_sample.json"))
     results = [
         ToolResult("steampipe", ToolStatus.OK, findings=steampipe),
         ToolResult("custodian", ToolStatus.OK, findings=custodian),
         ToolResult("komiser", ToolStatus.OK, findings=komiser),
         ToolResult("opencost", ToolStatus.OK, findings=opencost),
+        ToolResult("krr", ToolStatus.OK, findings=krr),
     ]
     return build_report(
         results,
@@ -45,7 +48,7 @@ def test_total_savings_is_exact():
     report = _scan_report()
     assert report.total_monthly_savings == 268.0
     assert report.annual_savings == 3216.0
-    assert report.total == 8
+    assert report.total == 9
 
 
 def test_safe_vs_judgment_split_is_exact():
@@ -65,7 +68,7 @@ def test_ranking_is_by_dollar_impact():
 def test_category_breakdown_totals():
     report = _scan_report()
     cats = {c.category: c for c in report.by_category}
-    assert cats["rightsizing"].savings == 130.0 and cats["rightsizing"].count == 3  # 2 EC2 + OpenCost ns
+    assert cats["rightsizing"].savings == 130.0 and cats["rightsizing"].count == 4  # 2 EC2 + OpenCost + KRR
     assert cats["idle"].savings == 120.0
     assert cats["unused"].savings == 11.6 and cats["unused"].count == 2
     assert cats["storage_class"].savings == 6.4
@@ -79,7 +82,7 @@ def test_risk_breakdown_totals():
     risks = {r.risk: r for r in report.by_risk}
     assert risks["safe"].savings == 11.6 and risks["safe"].count == 3
     assert risks["moderate"].savings == 6.4
-    assert risks["judgment"].savings == 250.0 and risks["judgment"].count == 4
+    assert risks["judgment"].savings == 250.0 and risks["judgment"].count == 5
 
 
 def test_quick_wins_are_low_risk_high_value():

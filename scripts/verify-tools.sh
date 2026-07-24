@@ -31,13 +31,26 @@ check_cli "steampipe" steampipe "$STEAMPIPE_VERSION" --version
 check_cli "custodian" custodian "$CUSTODIAN_VERSION" version
 check_cli "infracost" infracost "$INFRACOST_VERSION" --version
 
+echo ""
+echo "Docker ARG pins:"
+for name in AWS_CLI_VERSION STEAMPIPE_VERSION STEAMPIPE_AWS_PLUGIN_VERSION CUSTODIAN_VERSION INFRACOST_VERSION; do
+  want="${!name}"
+  printf "%-28s" "$name"
+  if grep -qF "ARG ${name}=${want}" "$ROOT/Dockerfile"; then
+    echo "OK — $want"
+  else
+    echo "MISMATCH — tool-versions.env has $want"; FAIL=1
+  fi
+done
+
 # Export/DB-based tools are consumed via files/APIs, not bundled as CLIs we invoke.
-# Their pins are documented here so bumps are reviewed (Dependabot opens PRs).
+# Their pins are documented here so bumps are reviewed (the version watcher opens PRs).
 echo ""
 echo "Documented pins (consumed via export/DB, not invoked as a CLI):"
 echo "  cloudquery  $CLOUDQUERY_VERSION"
 echo "  komiser     $KOMISER_VERSION"
 echo "  opencost    $OPENCOST_VERSION"
+echo "  krr         $KRR_VERSION"
 
 # CostHive itself must import and report a version.
 echo ""

@@ -29,6 +29,10 @@ extras the FinOps tools need:
 - **CloudWatch metrics** reads (for Custodian's idle/low-utilization filters)
 - A few EC2/RDS/ELB/EKS describe/list calls
 
+The EKS calls only discover clusters. Kubernetes API access is separate; CostHive
+reads local OpenCost/KRR exports, so the audit role does not need cluster-admin
+access.
+
 ## Cross-account audit role (consultants)
 
 Deploy [iam/audit-role.cfn.yaml](../iam/audit-role.cfn.yaml) in each client
