@@ -47,10 +47,17 @@
   tr:last-child td { border-bottom:none; }
   td.money { font-weight:700; color:#34d399; white-space:nowrap; }
   code { background:#0b1220; padding:1px 6px; border-radius:5px; font-size:12px; word-break:break-all; }
-  .controls { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
-  .controls input, .controls select { background:#0b1220; color:var(--ink); border:1px solid var(--line);
+  .controls { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px; padding:10px;
+              position:sticky; top:8px; z-index:2; background:rgba(30,41,59,.96);
+              border:1px solid var(--line); border-radius:10px; }
+  .controls input, .controls select, .controls button { background:#0b1220; color:var(--ink); border:1px solid var(--line);
             border-radius:8px; padding:8px 10px; font-size:13px; }
   .controls input { flex:1; min-width:200px; }
+  .controls button { cursor:pointer; }
+  .controls button:hover { border-color:var(--gold); }
+  .filter-meta { display:flex; align-items:center; justify-content:space-between; gap:12px;
+                 color:var(--muted); font-size:12px; margin-bottom:12px; }
+  .filter-jump { display:inline-block; margin-top:12px; color:#a7f3d0; font-weight:700; }
   details { margin-top:6px; }
   summary { cursor:pointer; color:var(--muted); }
   .action { color:#86efac; }
@@ -156,6 +163,7 @@
       <div class="item"><div class="l">⚖️ Needs a judgment call</div><div class="v">{{ r.judgment_savings | money(r.currency) }}/mo</div></div>
     </div>
     <div class="disclaimer">Figures are estimates based on public list prices, provided to rank opportunities — validate against your own usage before acting. Safe items are reversible/no-impact; judgment-call items may affect a workload.</div>
+    {% if r.findings %}<a class="filter-jump" href="#sec-findings">Filter all {{ r.total }} opportunities ↓</a>{% endif %}
     {% endif %}
   </div>
 
@@ -260,35 +268,40 @@
 
   <section id="sec-findings">
     <h2>All opportunities</h2>
+    {% if r.findings %}
     <div class="controls">
-      <input id="q" type="search" placeholder="Filter by text (resource, title, description)…">
-      <select id="fcat">
+      <input id="q" type="search" aria-label="Search opportunities" placeholder="Search resource, title, region, or account…">
+      <select id="fcat" aria-label="Filter by category">
         <option value="">All categories</option>
         {% for c in r.by_category %}<option value="{{ c.category }}">{{ c.label }}</option>{% endfor %}
       </select>
-      <select id="ftool">
+      <select id="ftool" aria-label="Filter by tool">
         <option value="">All tools</option>
         {% for t in r.tools %}<option value="{{ t.name }}">{{ t.name }}</option>{% endfor %}
       </select>
-      <select id="fconf">
+      <select id="fconf" aria-label="Filter by confidence">
         <option value="">All confidence</option>
         <option value="High">High</option>
         <option value="Medium">Medium</option>
         <option value="Low">Low</option>
       </select>
-      <select id="frisk">
+      <select id="frisk" aria-label="Filter by risk">
         <option value="">All risk levels</option>
         <option value="Safe">Safe</option>
         <option value="Moderate">Moderate</option>
         <option value="Judgment call">Judgment call</option>
       </select>
+      <button id="filter-reset" type="button">Reset</button>
     </div>
+    <div class="filter-meta"><span id="filter-summary" aria-live="polite"></span><span>Filters combine</span></div>
+    {% endif %}
     <table id="findings">
       <thead><tr><th>Monthly savings</th><th>Confidence</th><th>Risk</th><th>Category</th><th>Tool</th><th>Resource</th><th>Opportunity</th></tr></thead>
       <tbody>
       {% for f in r.findings %}
         <tr class="frow" data-cat="{{ f.category.value }}" data-tool="{{ f.tool }}" data-conf="{{ f.confidence.label }}" data-risk="{{ f.risk.label }}"
-            data-text="{{ (f.title ~ ' ' ~ f.resource ~ ' ' ~ f.description ~ ' ' ~ f.service) | lower }}">
+            data-savings="{{ f.estimated_monthly_savings }}"
+            data-text="{{ (f.title ~ ' ' ~ f.resource ~ ' ' ~ f.description ~ ' ' ~ f.service ~ ' ' ~ f.region ~ ' ' ~ f.account_id) | lower }}">
           <td class="money">{{ f.estimated_monthly_savings | money(r.currency) }}</td>
           <td><span class="conf conf-{{ f.confidence.label }}">{{ f.confidence.label }}</span></td>
           <td><span class="risk risk-{{ f.risk.label | replace(' ', '-') }}">{{ f.risk.label }}</span></td>
@@ -313,6 +326,7 @@
       {% else %}
         <tr><td colspan="7">{% if r.has_tool_errors %}No opportunities normalized — the run was incomplete.{% else %}No opportunities matched the completed checks. This is not a clean bill of health for the account; review the Tools notes and cost-data prerequisites for coverage gaps.{% endif %}</td></tr>
       {% endfor %}
+      {% if r.findings %}<tr id="filter-empty" hidden><td colspan="7">No opportunities match these filters.</td></tr>{% endif %}
       </tbody>
     </table>
   </section>
@@ -322,15 +336,21 @@
   savings are estimates — validate before acting · reports stay local; connected tools may call configured services
 </footer>
 <script>
+  {% if r.findings %}
   const q = document.getElementById('q');
   const fcat = document.getElementById('fcat');
   const ftool = document.getElementById('ftool');
   const fconf = document.getElementById('fconf');
   const frisk = document.getElementById('frisk');
+  const reset = document.getElementById('filter-reset');
+  const summary = document.getElementById('filter-summary');
+  const empty = document.getElementById('filter-empty');
   const rows = Array.from(document.querySelectorAll('.frow'));
+  const money = new Intl.NumberFormat(undefined, { style: 'currency', currency: '{{ r.currency }}' });
   function apply() {
     const text = q.value.trim().toLowerCase();
     const cat = fcat.value, tool = ftool.value, conf = fconf.value, risk = frisk.value;
+    let visible = 0, savings = 0;
     rows.forEach(r => {
       const ok = (!text || r.dataset.text.includes(text))
         && (!cat || r.dataset.cat === cat)
@@ -338,9 +358,23 @@
         && (!conf || r.dataset.conf === conf)
         && (!risk || r.dataset.risk === risk);
       r.style.display = ok ? '' : 'none';
+      if (ok) {
+        visible += 1;
+        savings += Number(r.dataset.savings) || 0;
+      }
     });
+    summary.textContent = `Showing ${visible} of ${rows.length} opportunities · ${money.format(savings)}/mo visible`;
+    empty.hidden = visible !== 0;
   }
   [q, fcat, ftool, fconf, frisk].forEach(el => el.addEventListener('input', apply));
+  reset.addEventListener('click', () => {
+    q.value = '';
+    [fcat, ftool, fconf, frisk].forEach(el => { el.value = ''; });
+    apply();
+    q.focus();
+  });
+  apply();
+  {% endif %}
 </script>
 </body>
 </html>

@@ -55,6 +55,10 @@ def test_render_html_contains_headline_and_money():
     assert "Safe to reclaim now" in html
     assert "$40.00" in html
     assert "Needs a judgment call" in html
+    assert 'id="filter-reset"' in html
+    assert 'id="filter-summary"' in html
+    assert 'data-savings="40.0"' in html
+    assert "No opportunities match these filters." in html
 
 
 def test_render_md_contains_category_table():

@@ -10,8 +10,8 @@ path — one profile, one account, Docker.
   CostHive at accounts you have permission to audit.
 - **Read-only credentials** configured as a local AWS profile (see
   [authentication.md](authentication.md)).
-- Ideally, **Cost Explorer enabled** in that account for the fullest results — but
-  basic waste findings work without it (see [cost-data-setup.md](cost-data-setup.md)).
+- No Cost Explorer or Compute Optimizer setup is required by the current core
+  checks. See [cost-data-setup.md](cost-data-setup.md) for the coverage boundary.
 
 ## Step 1 — Get CostHive
 

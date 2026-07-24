@@ -1,62 +1,44 @@
-# Cost-data setup (Cost Explorer & CUR)
+# AWS data-source coverage
 
-> **This is the #1 cause of "CostHive returned no findings."** Unlike a pure
-> inventory scan, full cost value depends on AWS's billing data sources being
-> enabled. CostHive works without them, but degrades gracefully and tells you
-> exactly what to turn on.
+CostHive v0.0.6 does not require AWS billing services. The core live-account scan
+uses inventory APIs plus CloudWatch metrics, and currently checks:
 
-## What CostHive can do without any billing setup
+- unattached EBS volumes and unassociated Elastic IPs;
+- gp2 volumes that can move to gp3;
+- stopped EC2 instances with attached EBS;
+- owned EBS snapshots older than one year;
+- RDS instances with no connections over seven days;
+- running EC2 instances with average CPU below 5% over 14 days;
+- missing owner/cost-center tags.
 
-The core waste queries (Steampipe + Cloud Custodian) work from **describe/list +
-CloudWatch metrics** alone — no Cost Explorer required. You still get:
+A zero result means none of these completed checks matched in the selected regions.
+It is not a complete optimization certification.
 
-- Unattached EBS volumes and Elastic IPs
-- Old snapshots
-- Idle / low-utilization EC2 and RDS (via CloudWatch metrics)
-- gp2→gp3 storage-class opportunities
-- Untagged resources
+## Not imported yet
 
-So a brand-new account with nothing enabled still produces a useful report.
+The current release does **not** import recommendations or costs from:
 
-## Cost Explorer
+- AWS Cost Explorer;
+- AWS Compute Optimizer;
+- Cost and Usage Reports (CUR).
 
-- **What it powers:** historical spend, forecasts, and Cost-Explorer-based
-  rightsizing / Savings Plans / RI recommendations.
-- **Enable it:** Billing console → **Cost Explorer** → *Enable Cost Explorer*.
-  Data becomes available **~24 hours** after enabling.
-- **Permissions:** `ce:Get*`, `ce:List*`, `ce:Describe*` — included in
-  [iam/least-privilege-policy.json](../iam/least-privilege-policy.json).
+Enabling those services alone therefore does not change a v0.0.6 report, and the
+shipped least-privilege role does not request their permissions. Native imports can
+be added later as explicit tools, with their findings normalized into the same
+consolidated report.
 
-On start-up CostHive runs a lightweight Cost Explorer probe. If it's disabled or
-you lack access, you'll see a yellow note in the console **and** a
-**"Cost-data prerequisites"** section in the report — the scan still completes.
+## CloudWatch metrics
 
-## Compute Optimizer
+The bundled idle-RDS and low-utilization-EC2 policies query CloudWatch and need
+`cloudwatch:GetMetricStatistics`, `cloudwatch:GetMetricData`, and
+`cloudwatch:ListMetrics`. These reads are included in the shipped IAM policy.
 
-- **What it powers:** EC2 / Auto Scaling / EBS / Lambda rightsizing recommendations.
-- **Enable it:** Compute Optimizer console → *Opt in*. Recommendations appear after
-  it has observed ~12 hours of CloudWatch metrics (fuller signal after 14 days).
-- **Permissions:** `compute-optimizer:Get*`.
+## Kubernetes and IaC inputs
 
-## Cost and Usage Reports (CUR) — optional, deepest analysis
+EKS discovery uses read-only AWS APIs. Kubernetes cost allocation and workload
+rightsizing require OpenCost and/or KRR JSON exports; CostHive does not need
+cluster-admin access to ingest them. Pre-deploy IaC estimation uses Infracost and
+requires `INFRACOST_API_KEY`.
 
-For per-resource, tag-level spend attribution, enable a **CUR** delivered to S3
-(Billing console → *Cost & Usage Reports* → *Create report*). CostHive does not
-require CUR for v1, but future versions will read it when present.
-
-## Cloud Custodian metric filters
-
-Some bundled Custodian policies (idle RDS, low-utilization EC2) query CloudWatch
-metrics and need `cloudwatch:GetMetricStatistics` / `GetMetricData` / `ListMetrics`.
-These are included in the shipped IAM policy.
-
-## Quick checklist
-
-| Want | Enable |
-|------|--------|
-| Basic waste findings | Nothing — works out of the box |
-| Spend history & forecasts | Cost Explorer (wait ~24h) |
-| Rightsizing recommendations | Compute Optimizer (opt-in) |
-| Per-resource / tag cost attribution | Cost and Usage Reports (CUR) |
-
-See also: [iam-permissions.md](iam-permissions.md) · [troubleshooting.md](troubleshooting.md).
+See also: [iam-permissions.md](iam-permissions.md) ·
+[troubleshooting.md](troubleshooting.md) · [tools.md](tools.md).

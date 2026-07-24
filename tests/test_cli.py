@@ -30,6 +30,7 @@ def test_prerequisites_explains_kubernetes_inputs():
     assert result.exit_code == 0
     assert "No --kubernetes switch is needed" in result.stdout
     assert "--krr-export" in result.stdout
+    assert "No setup needed" in result.stdout
 
 
 def test_kubernetes_inputs_auto_enable_and_detection_is_reported():

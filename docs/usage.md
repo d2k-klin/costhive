@@ -9,7 +9,8 @@ Plus `costhive tools`, `costhive prerequisites`, and `costhive --version`.
 
 > Examples use Docker (`docker compose run --rm costhive …`). From a source install,
 > drop that prefix and run `costhive …` directly. Placeholders: `123456789012`
-> (account id), `<role-arn>`.
+> (account id), `<role-arn>`. After pulling or editing source, add `--build` before
+> the service name once so Compose cannot reuse a stale image.
 
 ## Task recipes
 
@@ -23,9 +24,9 @@ Output:
 
 ```
 ▶ running steampipe …
-  ok (7 findings, $84.20/mo) — 5/5 queries ran
+  ok (7 findings, $84.20/mo) — 5/5 checks ran; coverage: ...
 ▶ running custodian …
-  ok (2 findings, $44.20/mo) — 2 policy files evaluated (dry-run, no changes made)
+  ok (2 findings, $44.20/mo) — 6 policies across 2 files evaluated (dry-run, no changes made); coverage: ...
 
 💰 Total estimated monthly savings: $128.40 ($1,540.80/yr, 9 opportunities)
    ✅ safe to reclaim: $46.00/mo · ⚖️  judgment call: $82.40/mo

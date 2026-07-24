@@ -57,6 +57,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   CostHive's current boto3 release.
 - **Single package version source:** the CLI and reports now read the installed
   package metadata instead of retaining a stale duplicated version constant.
+- **Honest AWS prerequisites:** removed unused Cost Explorer/Compute Optimizer
+  probes and permissions; v0.0.6 no longer implies those unimplemented imports
+  can affect findings, and empty reports state their limited coverage.
 
 ## [0.0.5] - 2026-07-02
 

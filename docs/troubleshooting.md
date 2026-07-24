@@ -4,14 +4,21 @@ Symptom → cause → fix.
 
 ## "No findings" / much lower savings than expected
 
-**Cause:** Cost Explorer / Compute Optimizer not enabled, or the identity lacks
-`ce:*` / `compute-optimizer:*` reads. Spend-history and rightsizing findings need
-them.
+**Cause:** none of the completed default checks matched, only one region was
+selected, optional Kubernetes/export tools had no input, or a stale Docker image
+was reused.
 
-**Fix:** Enable Cost Explorer (wait ~24h) and opt into Compute Optimizer — see
-[cost-data-setup.md](cost-data-setup.md). CostHive prints a yellow note and a
-"Cost-data prerequisites" section when these are missing. Basic waste findings
-(unattached EBS/EIP, gp2→gp3) work without them.
+**Fix:** Read the Tools notes in the report for the exact completed coverage, pass
+every region you use via `--regions`, and provide relevant optional exports. After
+pulling or editing source, run `docker compose build costhive` or add `--build`
+before the service name. Cost Explorer and Compute Optimizer are not imported by
+the current core scan; enabling them alone will not add findings.
+
+## `No services to build`
+
+This is harmless Docker Compose status output during `compose run`; it does not
+mean CostHive skipped the scan. Use `docker compose run --rm --build costhive ...`
+after source changes to guarantee that the image is current.
 
 ## A tool shows `skipped`
 

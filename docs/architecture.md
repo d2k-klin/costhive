@@ -8,7 +8,7 @@ is: **auth → run tools → normalize → aggregate/rank → report.**
         │
         ▼
   ┌───────────────┐   sts:GetCallerIdentity, per account
-  │ auth.py       │   + preflight_cost_access (Cost Explorer / Compute Optimizer)
+  │ auth.py       │   + best-effort EKS discovery
   └──────┬────────┘
          ▼   one AwsContext per account
   ┌───────────────────────────────────────────────┐
@@ -34,7 +34,7 @@ is: **auth → run tools → normalize → aggregate/rank → report.**
 
 | Module | Responsibility |
 |--------|----------------|
-| `costhive/auth.py` | Resolve credentials, verify identity, probe cost-data access, one `AwsContext` per account. |
+| `costhive/auth.py` | Resolve credentials, verify identity, discover EKS, one `AwsContext` per account. |
 | `costhive/tools/base.py` | The `CostTool` contract (`run(ctx, workdir) → ToolResult`) + subprocess/progress helpers. |
 | `costhive/tools/*.py` | One wrapper per tool; each returns normalized `SavingsFinding`s. |
 | `costhive/models.py` | The unified schema: `SavingsFinding`, `Category`, `Confidence`, `Risk`. |

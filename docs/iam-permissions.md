@@ -21,13 +21,14 @@ identity before doing anything.
 ## Least-privilege policy
 
 Attach [iam/least-privilege-policy.json](../iam/least-privilege-policy.json)
-alongside the AWS-managed **ViewOnlyAccess** policy. It adds the cost-specific
-extras the FinOps tools need:
+alongside the AWS-managed **ViewOnlyAccess** policy. It adds the small set of
+extras the current core checks need:
 
-- **Cost Explorer** reads (`ce:Get*` / `ce:List*` / `ce:Describe*`)
-- **Compute Optimizer** reads (`compute-optimizer:Get*`)
 - **CloudWatch metrics** reads (for Custodian's idle/low-utilization filters)
 - A few EC2/RDS/ELB/EKS describe/list calls
+
+Cost Explorer, Compute Optimizer, and CUR permissions are intentionally absent:
+v0.0.6 does not import those data sources.
 
 The EKS calls only discover clusters. Kubernetes API access is separate; CostHive
 reads local OpenCost/KRR exports, so the audit role does not need cluster-admin

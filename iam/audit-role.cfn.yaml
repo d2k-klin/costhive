@@ -1,8 +1,8 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: >
   CostHive cross-account cost-audit role. Deploy this in a client account to let a
-  consultant run CostHive via assume-role. Grants read-only cost/waste access plus
-  Cost Explorer and Compute Optimizer reads. No write/delete permissions.
+  consultant run CostHive via assume-role. Grants read-only inventory and
+  CloudWatch access. No write/delete permissions.
 
 Parameters:
   TrustedPrincipalArn:
@@ -35,18 +35,6 @@ Resources:
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
-              - Sid: CostExplorer
-                Effect: Allow
-                Action:
-                  - ce:Get*
-                  - ce:List*
-                  - ce:Describe*
-                Resource: "*"
-              - Sid: ComputeOptimizer
-                Effect: Allow
-                Action:
-                  - compute-optimizer:Get*
-                Resource: "*"
               - Sid: CloudWatchMetrics
                 Effect: Allow
                 Action:

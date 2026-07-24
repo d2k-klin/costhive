@@ -11,8 +11,9 @@ written to them. Connected tools can call AWS, Infracost, Prometheus, or other
 services you explicitly configure.
 
 **Do I have to enable Cost Explorer?**
-Not for basic waste findings — but yes for spend history, forecasts, and rightsizing.
-See [cost-data-setup.md](cost-data-setup.md).
+No. The current core scan does not import Cost Explorer, Compute Optimizer, or CUR
+data. Enabling those services alone does not change the report. See
+[cost-data-setup.md](cost-data-setup.md).
 
 **Are the savings numbers exact?**
 No — they're estimates from public list prices, used to *rank* opportunities. Each

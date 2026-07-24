@@ -7,17 +7,12 @@ Supports, in priority order (see project plan §5):
 
 Always calls sts:GetCallerIdentity first so the user sees exactly which account is
 about to be analyzed.
-
-Cost note: unlike a pure security scan, cost analysis benefits from Cost Explorer
-(`ce:*` read) and Compute Optimizer data. `preflight_cost_access` probes whether
-those are enabled so the tools can degrade gracefully and tell the user what to turn
-on (see docs/cost-data-setup.md).
 """
 
 from __future__ import annotations
 
 import os
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 import boto3
 from botocore.exceptions import BotoCoreError, ClientError
@@ -32,15 +27,6 @@ class Identity:
     account_id: str
     arn: str
     user_id: str
-
-
-@dataclass
-class CostDataAccess:
-    """What billing/cost data sources are actually reachable for this identity."""
-
-    cost_explorer: bool = False
-    compute_optimizer: bool = False
-    notes: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -146,50 +132,6 @@ def build_contexts(
     if not role_arns:
         return [build_context(profile=profile, external_id=external_id, regions=regions)]
     return [build_context(profile=profile, role_arn=arn, external_id=external_id, regions=regions) for arn in role_arns]
-
-
-def preflight_cost_access(ctx: AwsContext) -> CostDataAccess:
-    """Best-effort probe of Cost Explorer / Compute Optimizer availability.
-
-    Cost Explorer must be explicitly enabled on an account before the CE API returns
-    data, and Compute Optimizer must be opted-in. Rather than let a tool fail
-    opaquely, we check up front and surface a clear "enable this" note. All failures
-    degrade to False rather than raising — a cost scan is still useful without them.
-    """
-    access = CostDataAccess()
-    # Cost Explorer is a global endpoint served from us-east-1.
-    try:
-        ce = ctx.client("ce", region="us-east-1")
-        ce.get_cost_categories(
-            SearchString="",
-            TimePeriod={"Start": "2020-01-01", "End": "2020-01-02"},
-            MaxResults=1,
-        )
-        access.cost_explorer = True
-    except ClientError as exc:
-        code = exc.response.get("Error", {}).get("Code", "")
-        if code in ("AccessDeniedException", "UnauthorizedException", "AccessDenied"):
-            access.notes.append("Cost Explorer: access denied — grant ce:Get*/ce:Describe* to this identity.")
-        elif code == "DataUnavailableException":
-            access.notes.append("Cost Explorer: not enabled — enable it in Billing console (data takes ~24h).")
-            access.cost_explorer = True  # enabled path exists; data just not ready
-        else:
-            # Some CE errors (e.g. validation on the probe range) still mean access works.
-            access.cost_explorer = True
-    except BotoCoreError:
-        access.notes.append("Cost Explorer: could not be reached.")
-
-    try:
-        co = ctx.client("compute-optimizer", region=ctx.regions[0] if ctx.regions else "us-east-1")
-        status = co.get_enrollment_status()
-        if status.get("status") == "Active":
-            access.compute_optimizer = True
-        else:
-            access.notes.append("Compute Optimizer: not opted-in — enable it for rightsizing recommendations.")
-    except (ClientError, BotoCoreError):
-        access.notes.append("Compute Optimizer: access denied or unavailable.")
-
-    return access
 
 
 def discover_eks_clusters(ctx: AwsContext) -> list[str]:

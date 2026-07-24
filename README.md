@@ -10,7 +10,7 @@
 CostHive orchestrates several open-source AWS FinOps tools behind **one command** and merges their output into **one consolidated, dollar-ranked report** — a single list of *"$X/mo saved by doing Y"* instead of several dashboards. It's the cost sibling to [SentryHive](https://github.com/d2k-klin/sentryhive): same orchestration pattern and report engine, but findings are ranked by **savings** rather than severity.
 
 ```bash
-docker compose run --rm costhive scan \
+docker compose run --rm --build costhive scan \
   --role-arn arn:aws:iam::CLIENT:role/CostHiveAudit \
   --external-id shared-secret --client-name "Acme Corp"
 # → ./reports/report.html (branded), report.md, findings.json
@@ -18,11 +18,10 @@ docker compose run --rm costhive scan \
 
 See a rendered example: [examples/sample-report.md](examples/sample-report.md) · [examples/sample-report.html](examples/sample-report.html).
 
-> ⚠️ **Before you run:** basic waste findings work out of the box, but historical
-> spend, forecasts and rightsizing need **Cost Explorer enabled** in the account
-> (~24h to populate). If you get few/no findings, this is almost always why — see
-> [docs/cost-data-setup.md](docs/cost-data-setup.md). Only analyze accounts you're
-> authorized to.
+> ⚠️ **Before you run:** a zero means none of the completed checks matched; it is
+> not proof that the account is fully optimized. The default scan covers a focused
+> set of inventory and CloudWatch checks in the selected regions. Only analyze
+> accounts you're authorized to.
 
 ---
 
@@ -113,9 +112,12 @@ EKS is auto-detected; no `--kubernetes` flag is needed. Supplying
 `--opencost-export` or `--krr-export` enables Kubernetes analysis, including for
 non-EKS clusters.
 
-## Cost-data prerequisites
+## AWS data-source coverage
 
-Unlike a pure inventory scan, full cost value depends on **Cost Explorer** and **Compute Optimizer** being enabled. CostHive probes for these up front and tells you what to turn on rather than failing opaquely. See [docs/cost-data-setup.md](docs/cost-data-setup.md).
+The current core scan uses AWS inventory APIs and CloudWatch metrics. It does not
+yet import Cost Explorer, Compute Optimizer, or CUR recommendations, so enabling
+those services alone does not change a v0.0.6 report. See
+[docs/cost-data-setup.md](docs/cost-data-setup.md) for the exact coverage boundary.
 
 ## Documentation
 
@@ -124,7 +126,7 @@ Unlike a pure inventory scan, full cost value depends on **Cost Explorer** and *
 | [Getting started](docs/getting-started.md) | 5-minute first report |
 | [Installation](docs/installation.md) · [Usage](docs/usage.md) | Install methods · every command & flag |
 | [Authentication](docs/authentication.md) · [IAM permissions](docs/iam-permissions.md) | Auth modes · least-privilege policy + client onboarding |
-| [Cost-data setup](docs/cost-data-setup.md) | Enabling Cost Explorer / CUR |
+| [AWS data-source coverage](docs/cost-data-setup.md) | Current checks, exclusions, and required inputs |
 | [Reports](docs/reports.md) · [Categories](docs/categories.md) | Interpreting savings, confidence & risk |
 | [Tools](docs/tools.md) · [Configuration](docs/configuration.md) · [CI/CD](docs/ci-cd.md) | Integrated tools · config reference · pipelines |
 | [Architecture](docs/architecture.md) · [Troubleshooting](docs/troubleshooting.md) · [FAQ](docs/faq.md) | How it works · fixes · questions |

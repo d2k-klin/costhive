@@ -27,7 +27,7 @@ from rich.table import Table
 
 from costhive import __version__
 from costhive.aggregate import build_report, build_rollup
-from costhive.auth import AuthError, build_contexts, discover_eks_clusters, preflight_cost_access
+from costhive.auth import AuthError, build_contexts, discover_eks_clusters
 from costhive.report import VALID_FORMATS, write_reports
 from costhive.tools import ALL_TOOLS, DEFAULT_LIVE_TOOLS, build_tools
 from costhive.tools.base import CostTool, ToolResult
@@ -87,7 +87,7 @@ def prerequisites():
     table.add_column("How to provide it")
     table.add_row("AWS scan", "AWS credentials + read-only IAM", "--profile, environment credentials, or --role-arn")
     table.add_row("Cross-account", "CostHiveAudit role; external ID if its trust policy requires one", "--role-arn")
-    table.add_row("Historical costs", "Cost Explorer enabled; Compute Optimizer for rightsizing", "AWS account setup")
+    table.add_row("AWS billing data", "Not required by the current core checks", "No setup needed")
     table.add_row("Kubernetes cost", "OpenCost /allocation JSON", "--opencost-export")
     table.add_row("Kubernetes sizing", "KRR JSON; generating it needs kubeconfig/RBAC + Prometheus", "--krr-export")
     table.add_row("IaC estimate", "Infracost API key", "INFRACOST_API_KEY")
@@ -186,9 +186,6 @@ def scan(
     reports = []
     for ctx in contexts:
         console.rule(f"[bold]Account {ctx.identity.account_id}[/bold]")
-        access = preflight_cost_access(ctx)
-        for note in access.notes:
-            console.print(f"[yellow]⚠ {note}[/yellow]")
         detected_clusters = discover_eks_clusters(ctx)
         kubernetes_notes = _note_kubernetes(detected_clusters, opencost_export, krr_export)
 
@@ -212,7 +209,7 @@ def scan(
                 generated_at=generated_at,
                 client_name=client_name or "",
                 logo_data_uri=logo_uri,
-                cost_data_notes=access.notes + kubernetes_notes,
+                cost_data_notes=kubernetes_notes,
             )
         target = out_dir if len(contexts) == 1 else os.path.join(out_dir, ctx.identity.account_id)
         paths = write_reports(report, target, **write_kwargs)

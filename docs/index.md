@@ -13,7 +13,7 @@ matches what you're doing.
 - [Installation](installation.md) — Docker, from source, PyPI.
 - [Usage](usage.md) — scan, estimate, filtering, branded reports, multi-account.
 - [Authentication](authentication.md) — profile, static keys, assume-role.
-- [Cost-data setup](cost-data-setup.md) — enabling Cost Explorer & CUR.
+- [AWS data-source coverage](cost-data-setup.md) — current checks, exclusions, and inputs.
 - [CI/CD](ci-cd.md) — run CostHive in a pipeline.
 
 ## Reference — lookup
