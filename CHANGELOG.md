@@ -11,6 +11,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.7] - 2026-08-14
+
+### Changed
+- **Savings-impacting tool updates:** Steampipe 2.4.4 → 2.4.5, Steampipe
+  AWS plugin 1.31.0 → 1.32.0, Infracost 2.12.2 → 2.16.1, CloudQuery CLI
+  6.41.0 → 6.41.1, and OpenCost 1.121.0 → 1.121.1. The upstream notes do
+  not change CostHive's wrapper flags or parsed output contracts.
+- **Current Python toolchain:** raised Hatchling to 1.32.0, Typer to 0.27.1,
+  boto3 to 1.43.71, and Ruff to 0.16.3.
+- **Current workflow tooling:** upgraded AWS CLI to 2.36.23, CodeQL to
+  4.37.7, Docker login to 4.6.0, and regenerated agentic workflows with
+  gh-aw 0.86.2.
+
 ## [0.0.6] - 2026-07-24
 
 ### Changed
@@ -137,7 +150,8 @@ Initial release — the money-first sibling to
 - Pinned bundled tools: Steampipe 2.4.4, Cloud Custodian 0.9.51, Infracost 0.10.44
   (documented pins for CloudQuery 6.38.0, Komiser 3.1.22, OpenCost 1.120.4).
 
-[Unreleased]: https://github.com/d2k-klin/costhive/compare/v0.0.6...HEAD
+[Unreleased]: https://github.com/d2k-klin/costhive/compare/v0.0.7...HEAD
+[0.0.7]: https://github.com/d2k-klin/costhive/compare/v0.0.6...v0.0.7
 [0.0.6]: https://github.com/d2k-klin/costhive/compare/v0.0.5...v0.0.6
 [0.0.5]: https://github.com/d2k-klin/costhive/compare/v0.0.4...v0.0.5
 [0.0.4]: https://github.com/d2k-klin/costhive/compare/v0.0.3...v0.0.4

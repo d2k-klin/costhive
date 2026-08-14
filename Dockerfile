@@ -12,11 +12,11 @@ ENV PYTHONUNBUFFERED=1 \
 
 # Pinned tool versions come from the single source of truth (tool-versions.env),
 # overridable at build time with --build-arg. Keep these defaults in sync with it.
-ARG AWS_CLI_VERSION=2.36.7
-ARG STEAMPIPE_VERSION=2.4.4
-ARG STEAMPIPE_AWS_PLUGIN_VERSION=1.31.0
+ARG AWS_CLI_VERSION=2.36.23
+ARG STEAMPIPE_VERSION=2.4.5
+ARG STEAMPIPE_AWS_PLUGIN_VERSION=1.32.0
 ARG CUSTODIAN_VERSION=0.9.51
-ARG INFRACOST_VERSION=2.12.2
+ARG INFRACOST_VERSION=2.16.1
 
 # System deps:
 #  - git: IaC checkout for Infracost

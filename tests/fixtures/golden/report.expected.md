@@ -11,7 +11,7 @@
 | **Identity** | `arn:aws:iam::123456789012:role/CostHiveAudit` |
 | **Regions** | us-east-1 |
 | **Generated** | 2026-07-01 00:00:00 UTC |
-| **Prepared by** | CostHive by Mr.D · v0.0.6 |
+| **Prepared by** | CostHive by Mr.D · v0.0.7 |
 | **Tools** | steampipe (Steampipe v2.4.4), custodian (custodian 0.9.51), komiser (komiser 3.1.22), opencost (opencost 1.121.0), krr (1.29.0) |
 
 ## Executive summary
@@ -158,4 +158,4 @@
 
 
 ---
-_Prepared by [CostHive by Mr.D](https://github.com/d2k-klin/costhive) · CostHive v0.0.6. Savings are estimates — validate against your own usage before acting. CostHive keeps generated reports local; connected tools may call their configured services._
+_Prepared by [CostHive by Mr.D](https://github.com/d2k-klin/costhive) · CostHive v0.0.7. Savings are estimates — validate against your own usage before acting. CostHive keeps generated reports local; connected tools may call their configured services._
