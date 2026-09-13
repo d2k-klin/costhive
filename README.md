@@ -151,3 +151,7 @@ costhive scan --profile ci --fail-under 500 --yes
 ## License
 
 Apache-2.0 — see [LICENSE](LICENSE).
+
+---
+
+Built and maintained by [Mr. D](https://mr-d.dev).
