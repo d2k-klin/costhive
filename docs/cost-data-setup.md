@@ -1,6 +1,6 @@
 # AWS data-source coverage
 
-CostHive v0.0.6 does not require AWS billing services. The core live-account scan
+CostHive v0.0.8 does not require AWS billing services. The core live-account scan
 uses inventory APIs plus CloudWatch metrics, and currently checks:
 
 - unattached EBS volumes and unassociated Elastic IPs;
@@ -22,7 +22,7 @@ The current release does **not** import recommendations or costs from:
 - AWS Compute Optimizer;
 - Cost and Usage Reports (CUR).
 
-Enabling those services alone therefore does not change a v0.0.6 report, and the
+Enabling those services alone therefore does not change a v0.0.8 report, and the
 shipped least-privilege role does not request their permissions. Native imports can
 be added later as explicit tools, with their findings normalized into the same
 consolidated report.

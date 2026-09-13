@@ -28,7 +28,7 @@ extras the current core checks need:
 - A few EC2/RDS/ELB/EKS describe/list calls
 
 Cost Explorer, Compute Optimizer, and CUR permissions are intentionally absent:
-v0.0.6 does not import those data sources.
+v0.0.8 does not import those data sources.
 
 The EKS calls only discover clusters. Kubernetes API access is separate; CostHive
 reads local OpenCost/KRR exports, so the audit role does not need cluster-admin

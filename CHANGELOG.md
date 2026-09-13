@@ -11,6 +11,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.8] - 2026-09-13
+
+### Added
+- **Project mascot:** Mr. D now fronts the README ([docs/assets/mr-d-cloud.png](docs/assets/mr-d-cloud.png)).
+
+### Changed
+- **Savings-impacting tool updates:** Steampipe 2.4.5 → 2.4.6, Steampipe AWS
+  plugin 1.32.0 → 1.33.0, Cloud Custodian 0.9.51 → 0.9.52, Infracost 2.16.1 →
+  2.16.3, CloudQuery CLI 6.41.1 → 6.42.2, OpenCost 1.121.1 → 1.121.2, and
+  Robusta KRR 1.29.0 → 1.30.0. All upstream changes are additive (new plugin
+  tables, new policy resources/filters) or dependency/CVE bumps; no wrapper
+  flags or parsed output contracts changed, so `costhive/tools/` and
+  `costhive/normalize.py` are untouched.
+- **Current workflow tooling:** AWS CLI 2.36.23 → 2.36.44. Komiser (3.1.22) and
+  Gitleaks (8.30.1) are already current.
+- **Docs:** refreshed the stale `v0.0.6` coverage references in `README.md`,
+  `docs/cost-data-setup.md`, and `docs/iam-permissions.md` to the current release.
+
 ## [0.0.7] - 2026-08-14
 
 ### Changed
@@ -150,7 +168,8 @@ Initial release — the money-first sibling to
 - Pinned bundled tools: Steampipe 2.4.4, Cloud Custodian 0.9.51, Infracost 0.10.44
   (documented pins for CloudQuery 6.38.0, Komiser 3.1.22, OpenCost 1.120.4).
 
-[Unreleased]: https://github.com/d2k-klin/costhive/compare/v0.0.7...HEAD
+[Unreleased]: https://github.com/d2k-klin/costhive/compare/v0.0.8...HEAD
+[0.0.8]: https://github.com/d2k-klin/costhive/compare/v0.0.7...v0.0.8
 [0.0.7]: https://github.com/d2k-klin/costhive/compare/v0.0.6...v0.0.7
 [0.0.6]: https://github.com/d2k-klin/costhive/compare/v0.0.5...v0.0.6
 [0.0.5]: https://github.com/d2k-klin/costhive/compare/v0.0.4...v0.0.5

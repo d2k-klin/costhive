@@ -1,3 +1,5 @@
+<img src="docs/assets/mr-d-cloud.png" alt="Mr. D, the CostHive mascot" align="right" width="170">
+
 # ⬡ CostHive
 
 > Point it at an AWS account and get a money-first cost-optimization report from best-in-class open-source FinOps tools — no manual tool wrangling.
@@ -116,7 +118,7 @@ non-EKS clusters.
 
 The current core scan uses AWS inventory APIs and CloudWatch metrics. It does not
 yet import Cost Explorer, Compute Optimizer, or CUR recommendations, so enabling
-those services alone does not change a v0.0.6 report. See
+those services alone does not change a v0.0.8 report. See
 [docs/cost-data-setup.md](docs/cost-data-setup.md) for the exact coverage boundary.
 
 ## Documentation
